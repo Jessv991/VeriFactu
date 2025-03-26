@@ -28,31 +28,54 @@
         /// </summary>
         private void InitializeComponent()
         {
-            button1 = new Button();
+            btnEscribir = new Button();
+            txtTipo = new TextBox();
+            numFactura = new TextBox();
             SuspendLayout();
             // 
-            // button1
+            // btnEscribir
             // 
-            button1.Location = new Point(29, 15);
-            button1.Name = "button1";
-            button1.Size = new Size(75, 23);
-            button1.TabIndex = 0;
-            button1.Text = "button1";
-            button1.UseVisualStyleBackColor = true;
+            btnEscribir.Location = new Point(50, 357);
+            btnEscribir.Name = "btnEscribir";
+            btnEscribir.Size = new Size(124, 61);
+            btnEscribir.TabIndex = 0;
+            btnEscribir.Text = "button1";
+            btnEscribir.UseVisualStyleBackColor = true;
+            btnEscribir.Click += btnEscribir_Click;
+            // 
+            // txtNombre
+            // 
+            txtTipo.Location = new Point(21, 26);
+            txtTipo.Name = "txtNombre";
+            txtTipo.Size = new Size(108, 23);
+            txtTipo.TabIndex = 1;
+            // 
+            // textBox1
+            // 
+            numFactura.Location = new Point(145, 30);
+            numFactura.Name = "textBox1";
+            numFactura.Size = new Size(100, 23);
+            numFactura.TabIndex = 2;
+            numFactura.TextChanged += textBox1_TextChanged;
             // 
             // Inicio
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Controls.Add(button1);
+            Controls.Add(numFactura);
+            Controls.Add(txtTipo);
+            Controls.Add(btnEscribir);
             Name = "Inicio";
             Text = "Form1";
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
 
-        private Button button1;
+        private Button btnEscribir;
+        private TextBox txtTipo;
+        private TextBox numFactura;
     }
 }
