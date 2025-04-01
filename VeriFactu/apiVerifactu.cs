@@ -9,8 +9,13 @@ namespace VeriFactu
 {
     internal class apiVerifactu
     {
+        public class issuer//datos del emisor de la factura
+        {
+            public string irsId { get; set; }
+            public string name { get; set; }
+        }
 
-        public class PartnerOther
+        public class PartnerOther//destinatarios )(Recipient)
         {
             public string irsId {  get; set; }//numero de identidad
             public string idType {  get; set; }//tipo de documento
@@ -18,14 +23,7 @@ namespace VeriFactu
             public string country {  get; set; }
         }
 
-        public class Recipient
-        {
-            public string irsId { get; set; }
-            public string name { get; set; }
-            public string country { get; set; }
-        }
-
-        public class InvoiceIdJson
+        public class InvoiceIdJson// IDFactura
         {
             public string number { get; set; }
             public string issuedTime { get; set; }

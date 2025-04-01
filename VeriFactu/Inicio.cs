@@ -11,9 +11,20 @@ namespace VeriFactu
 
         private void Inicio_Load(object sender, EventArgs e)
         {
-            conection.eso();
+            //conection.openConection();
             string tipoFactura = txtTipo.Text;
             string respuesta;
+            string sql_getVentas = System.String.Empty;
+            string sql_getTbaiCodi = System.String.Empty;
+            string sql_getTbaiCodiReenvio = System.String.Empty;
+            string sql_checkTbaiCodi = System.String.Empty;
+            string sql_getListaParametros = System.String.Empty;
+            string sql_getVenFactAbono = System.String.Empty;
+            string sql_getFechaVentaAbono = System.String.Empty;
+            string sql_updateFactura = System.String.Empty;
+            string sql_updateFactura_KO = System.String.Empty;
+            string sql_getVenImportTotal = System.String.Empty;
+            string sql_recargoEquivalenciaCliente = System.String.Empty;
 
             if (tipoFactura == "F")
             {
