@@ -99,6 +99,71 @@ namespace VeriFactu
         }
 
 
+        public static bool DeleteRow(string consultaSQL)
+        {
+            bool resultado = false;
+
+            try
+            {
+                connection.Open();
+
+                using (OdbcCommand command = new OdbcCommand(consultaSQL, connection))
+                {
+                    int rowsAffected = command.ExecuteNonQuery(); // Ejecutamos la consulta SQL
+                    if (rowsAffected > 0)
+                    {
+                        resultado = true; // Si la inserción fue exitosa, retornamos true
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                // Cerramos la conexión si está abierta
+                if (connection.State == ConnectionState.Open)
+                    connection.Close();
+            }
+
+            return resultado;
+        }
+
+
+        public static bool UpdatetRow(string consultaSQL)
+        {
+            bool resultado = false;
+
+            try
+            {
+                connection.Open();
+
+                using (OdbcCommand command = new OdbcCommand(consultaSQL, connection))
+                {
+                    int rowsAffected = command.ExecuteNonQuery(); // Ejecutamos la consulta SQL
+                    if (rowsAffected > 0)
+                    {
+                        resultado = true; // Si la inserción fue exitosa, retornamos true
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            finally
+            {
+                // Cerramos la conexión si está abierta
+                if (connection.State == ConnectionState.Open)
+                    connection.Close();
+            }
+
+            return resultado;
+        }
+
+
+
 
     }
 
