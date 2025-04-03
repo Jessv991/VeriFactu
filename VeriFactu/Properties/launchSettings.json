@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "VeriFactu": {
+      "commandName": "Project",
+      "commandLineArgs": "F 66 7 2024"
+    }
+  }
+}

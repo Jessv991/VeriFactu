@@ -31,7 +31,7 @@
             txtTipo = new TextBox();
             txtFactura = new TextBox();
             txtYear = new TextBox();
-            txtRenvio = new TextBox();
+            txtReenvio = new TextBox();
             txtTienda = new TextBox();
             label5 = new TextBox();
             label4 = new TextBox();
@@ -66,12 +66,12 @@
             txtYear.Size = new Size(108, 23);
             txtYear.TabIndex = 3;
             // 
-            // txtRenvio
+            // txtReenvio
             // 
-            txtRenvio.Location = new Point(477, 45);
-            txtRenvio.Name = "txtRenvio";
-            txtRenvio.Size = new Size(108, 23);
-            txtRenvio.TabIndex = 4;
+            txtReenvio.Location = new Point(477, 45);
+            txtReenvio.Name = "txtReenvio";
+            txtReenvio.Size = new Size(108, 23);
+            txtReenvio.TabIndex = 4;
             // 
             // txtTienda
             // 
@@ -169,7 +169,7 @@
             Controls.Add(label4);
             Controls.Add(label5);
             Controls.Add(txtTienda);
-            Controls.Add(txtRenvio);
+            Controls.Add(txtReenvio);
             Controls.Add(txtYear);
             Controls.Add(txtFactura);
             Controls.Add(txtTipo);
@@ -185,7 +185,7 @@
         private TextBox txtTipo;
         private TextBox txtFactura;
         private TextBox txtYear;
-        private TextBox txtRenvio;
+        private TextBox txtReenvio;
         private TextBox txtTienda;
         private TextBox label5;
         private TextBox label4;

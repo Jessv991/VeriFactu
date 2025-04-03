@@ -50,7 +50,25 @@ namespace VeriFactu
                 using (OdbcDataReader reader = command.ExecuteReader()) // Asegura la liberación de recursos
                 {
                     if (reader.Read() && !reader.IsDBNull(0)) // Evita errores si el valor es NULL
-                        resultado = reader.GetString(0);
+                    {
+                        Type fieldType = reader.GetFieldType(0);
+
+                        if (fieldType == typeof(decimal))
+                        {
+                            decimal temp = reader.GetDecimal(0);
+                            resultado = temp.ToString();  // Convertir el decimal a string 
+                        }
+                        else if (fieldType == typeof(int))
+                        {
+                            int temp = reader.GetInt32(0);
+                            resultado = temp.ToString();  // Convertir el entero a string
+                        }
+                        else
+                        {
+                            resultado = reader.GetString(0); // Leer como string si es un string
+                        }
+                    }
+
                 }
             }
             catch (Exception ex)
