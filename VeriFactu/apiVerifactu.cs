@@ -9,27 +9,48 @@ namespace VeriFactu
 {
     internal class apiVerifactu
     {
-        public class issuer//datos del emisor de la factura
+
+
+        public class Invoice //datos del emisor de la factura
+        {
+            public string issuer { get; set; } // IDEmisorFactura
+            public string recipient { get; set; } //? Destinatarios
+            public string id { get; set; } // IDFactura
+            public string type { get; set; } // TipoFactura
+            public string replacesTicket { get; set; } //? boolean
+            public string replacedTicketIds { get; set; } //? rray<InvoiceId>; FacturasSustituidas
+            public string creditNote { get; set; } //? CreditNoteType; FacturasRectificadas
+            public string simple { get; set; } //? boolean; FacturaSimplificadaArticulos7.2_7.3
+            public string description { get; set; } //? InvoiceDescription; DescripcionOperacion
+            public string vatLines { get; set; } //Array<VatLine>; Desglose
+            public string amount { get; set; } //CuotaTotal
+            public string issuedBy { get; set; } //? EmitidaPorTercerosODestinatario
+
+        }
+
+        public class Issuer//datos del emisor de la factura
         {
             public string irsId { get; set; }
             public string name { get; set; }
         }
 
-        public class PartnerOther//destinatarios )(Recipient)
+        public class Recipient//destinatarios )(PartnerOther)
         {
             public string irsId {  get; set; }//numero de identidad
             public string idType {  get; set; }//tipo de documento
             public string name {  get; set; }
             public string country {  get; set; }
+
         }
 
-        public class InvoiceIdJson// IDFactura
+        public class Id// IDFactura (InvoiceIdJson)
         {
             public string number { get; set; }
+            public string serie { get; set; }
             public string issuedTime { get; set; }
         }
         
-        public class InvoiceDescriptionJson //revisar valor de Date con david (porque hay dos ejemplos)
+        public class Description //(InvoiceDescriptionJson) revisar valor de Date con david (porque hay dos ejemplos)
         {
             public string text { get; set; }
             public string operationDate { get; set; }
@@ -48,6 +69,8 @@ namespace VeriFactu
             //pendiente vatKey de tipo vatKey
             public bool isUsingSimplifiedRegime { get; set; }
         }
+
+
 
         //=================FACTURAS RECTIFICATIVAS===============
 

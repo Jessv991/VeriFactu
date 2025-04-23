@@ -1,23 +1,24 @@
 using System.Data;
+using static VeriFactu.apiVerifactu;
 
 namespace VeriFactu
 {
     public partial class Inicio : Form
     {
         //Conection conection;
-        apiVerifactu.issuer apiIssuer;
-        apiVerifactu.PartnerOther apiPartnerOther;
-        apiVerifactu.InvoiceIdJson apiInvoiceIdJson;
-        apiVerifactu.InvoiceDescriptionJson apiInvoiceDescriptionJson;
+        apiVerifactu.Issuer apiIssuer;
+        apiVerifactu.Recipient apiRecipient;
+        apiVerifactu.Id apiId;
+        apiVerifactu.Description apiDescription;
         apiVerifactu.VatLine apiVatLine;
         apiVerifactu.CreditNoteType apiCreditNoteType;
         public Inicio()
         {
             InitializeComponent();
-            apiIssuer = new apiVerifactu.issuer();
-            apiPartnerOther = new apiVerifactu.PartnerOther();
-            apiInvoiceIdJson = new apiVerifactu.InvoiceIdJson();
-            apiInvoiceDescriptionJson = new apiVerifactu.InvoiceDescriptionJson();
+            apiIssuer = new apiVerifactu.Issuer();
+            apiRecipient = new apiVerifactu.Recipient();
+            apiId = new apiVerifactu.Id();
+            apiDescription = new apiVerifactu.Description();
             apiVatLine = new apiVerifactu.VatLine();
             apiCreditNoteType = new apiVerifactu.CreditNoteType();
         }
@@ -40,10 +41,12 @@ namespace VeriFactu
         static string TicketBai_DB = System.String.Empty;
         static string TicketBai_ApiKey = System.String.Empty;
         static string ImportTotalString = System.String.Empty;
-        static Decimal ImporTotalCheck = 0;
+        static decimal ImporTotalCheck = 0;
         static string serie = System.String.Empty;
         static string descripcion = System.String.Empty;
         static string rectificactiva = "N";
+        static string factura_a_cliente = "S";
+        static decimal importe_minimo;
         static string[] subs;
         static string id_vendafact = System.String.Empty;
         static DataTable ven_abono = new DataTable();
@@ -80,8 +83,12 @@ namespace VeriFactu
 
             //recargo_equivalencia_cliente = Conection.SelectOnce(sql_recargoEquivalenciaCliente); //consulta para optiner 'recargo_equivalencia_empresa'
 
+            //=========================importe minimo para pasar datos del cliente=========================
 
-            //===========CONDICIÓN SEGÚN EL TIPO DE FACTURA===========
+            string sql_getImporteMinimo = "SELECT PAR_Valor FROM TIENDADATOS WHERE TIE_Codigo = " + txtTienda.Text + " AND PAR_Key = 'TicketBai_ImporteMinimo'";
+            importe_minimo = Convert.ToDecimal(Conection.SelectOnce(sql_getImporteMinimo));
+
+            //=========================CONDICIÓN SEGÚN EL TIPO DE FACTURA=========================
 
             if (txtTipo.Text == "F")
             {
@@ -195,29 +202,14 @@ namespace VeriFactu
 
             vendaTable = Conection.SelectRows(sql_getVentas);
 
-            //MessageBox.Show("OK: " + vendaTable, "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
 
             //================DATOS DEL CLIENTE================
-
-            if (vendaTable.Rows[0].Field<string>("TipoDoc").ToString() != null)
+            if ((ImporTotalCheck > importe_minimo))
             {
-                if (vendaTable.Rows[0].Field<string>("TipoDoc").ToString() == "02") //IrsIdType
-                {
-
-                }
-                else
-                {
-                    //apiPartnerOther.irsId = vendaTable.Rows[0].Field<string>("TipoDoc").ToString(); //IrsIdType
-                    apiPartnerOther.irsId = vendaTable.Rows[0].Field<string>("TipoDoc");
-                }
-
+                this.datosCliente();
             }
-            else
-            {
-                MessageBox.Show("Error: Falta el País del Cliente");
-                System.Windows.Forms.Application.Exit();
-            }
+
+            //MessageBox.Show("OK: " + vendaTable, "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
 
 
@@ -271,6 +263,11 @@ namespace VeriFactu
                                              "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
                                              "AND v.VEN_Referencia = 'ABONO'";
 
+            if ((ImporTotalCheck > importe_minimo))
+            {
+                this.datosCliente();
+            }
+
             return "Factura de abono creada correctamente";
         }
 
@@ -305,6 +302,8 @@ namespace VeriFactu
                                         "AND FACT_Tienda = '" + txtTienda.Text + "' " +
                                         "AND FACT_Tipo = 'T' " +
                                         "AND YEAR(VEN_DataTicket) = '" + txtYear.Text + "'";
+
+            factura_a_cliente = "N";
 
             sql_recargoEquivalenciaCliente = "SELECT CLI_RecEquivalencia " +
                                        "from CLIENT c inner join VENDA v on c.TIE_Codigo = v.VEN_CliFactTie and c.CLI_Codi = v.VEN_CliFact WHERE " +
@@ -368,8 +367,71 @@ namespace VeriFactu
                                              "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
                                              "AND YEAR(v.VEN_DataTicket) = '" + txtYear.Text + "' " +
                                               "AND v.VEN_Referencia = 'ABONO'";
+            factura_a_cliente = "N";
 
             return "Ticket abono creado correctamente";
+        }
+
+        //Función para generar los datos del cliente si el valor total de la factura es mayor al minimo que viene de la base de dato
+
+        public void datosCliente()
+        {
+            //=====================numero de DNI (irsId)=====================
+
+            if (vendaTable.Rows[0].Field<string>("CLI_Dni") != null)
+            {
+                string dni = vendaTable.Rows[0].Field<string>("CLI_Dni").ToString();
+                dni = dni.Replace("-", "");
+                dni = dni.Replace("_", "");
+                dni = dni.Replace(" ", "");
+                char[] charsToTrim = { '*', ' ', '\'' };
+                dni = dni.Trim(charsToTrim);
+
+                apiRecipient.irsId = dni;
+            }
+            else
+            {
+                MessageBox.Show("Error: Falta el DNI del Cliente");
+            }
+
+            //=====================numero de TIPO DE DOCUMENTO (irsId)=====================
+
+
+            if (vendaTable.Rows[0].Field<string>("TipoDoc").ToString() != null)
+            {
+              //apiRecipient.irsId = vendaTable.Rows[0].Field<string>("TipoDoc").ToString(); //IrsIdType
+              apiRecipient.irsId = vendaTable.Rows[0].Field<string>("TipoDoc");
+            }
+            else
+            {
+                MessageBox.Show("Error: Falta el País del Cliente");
+                System.Windows.Forms.Application.Exit();
+            }
+
+            //=====================numero de NOMBRE (name)=====================
+
+            if (vendaTable.Rows[0].Field<string>("Nom").ToString() != null)
+            {
+                apiRecipient.name = vendaTable.Rows[0].Field<string>("Nom").ToString();
+            }
+            else
+            {
+                MessageBox.Show("Error: Falta el Nombre del Cliente");
+                System.Windows.Forms.Application.Exit();
+            }
+
+            //=====================numero de CIUDAD (country)=====================
+
+            if (vendaTable.Rows[0].Field<string>("Pais") != null)
+            {
+                apiRecipient.country = vendaTable.Rows[0].Field<string>("Pais").ToString();
+            }
+            else
+            {
+                MessageBox.Show("Error: Falta el País del Cliente");
+                System.Windows.Forms.Application.Exit();
+            }
+
         }
 
         public string deleteState()
@@ -445,6 +507,7 @@ namespace VeriFactu
         //}
 
 
+        //cogemos los valores que pasan por parametro
         public void getVEN_Tipo(string value)
         {
             txtTipo.Text = value;
