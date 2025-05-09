@@ -74,11 +74,17 @@ namespace VeriFactu
 
         //=================FACTURAS RECTIFICATIVAS===============
 
-        public class CreditNoteType
+        public class CreditNote//(CreditNoteType) este es el array que va despues de type que tiene los datos rectificativos
         {
             public string style { get; set; }//EL STYLE ES 'S' O 'I'
             public ArrayList ids { get; set; }
-            public string reason { get; set; }
+        }
+        
+        public class InvoiceId//(InvoiceIdJson) este es el array que va dentro de ids de (CreditNoteType)
+        {
+            public string serie { get; set; }//la serie es el número para la factura (lleva seri+tienda+factura_abono_year)
+            public string number { get; set; }//número de copias
+            public string issuedTime { get; set; }
         }
 
     }
