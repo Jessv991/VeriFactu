@@ -70,6 +70,10 @@ namespace VeriFactu
         static string nombre_cliente = System.String.Empty;
         static string typeJson = System.String.Empty;
         static ArrayList ids = new ArrayList();
+        static apiVerifactu.Recipient recipientArray = new apiVerifactu.Recipient();
+        static apiVerifactu.Id idArray = new apiVerifactu.Id();
+        static apiVerifactu.Description descriptionArray = new apiVerifactu.Description();
+        static apiVerifactu.VatLine vatLineArray = new apiVerifactu.VatLine();
         static apiVerifactu.InvoiceId creditArray = new apiVerifactu.InvoiceId();
         static apiVerifactu.CreditNote CreditNoteArray = new apiVerifactu.CreditNote();
 
@@ -152,6 +156,29 @@ namespace VeriFactu
         //tipo VatType España es "S1", pero debo averiguar que tipo le toca a cada país
         //tipo de documento IrsIdType se consulta en la BBDD tabla client columna  CLI_EstatCivil
 
+        public void sameSQLFacturas()
+        {
+            sql_checkTbaiCodi = "SELECT TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='" + txtTipo.Text + "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND VEN_NumFactura = '" + txtFactura.Text + "'";
+            
+            sql_getTbaiCodi = "SELECT MAX(TBAI_Codi) + 1 as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='" + txtTipo.Text + "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
+            
+            sql_getTbaiCodiReenvio = "SELECT TBAI_Codi as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='" + txtTipo.Text + "' AND VEN_NumFactura = '" + txtFactura.Text + "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
+            
+            sql_getVenFactAbono = "SELECT VEN_ImportBrut FROM VENDA WHERE VEN_NumFactura = '" + txtFactura.Text + "' " + "AND VEN_Tienda = '" + txtTienda.Text + "' " + "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' " + "AND VEN_Referencia = 'ABONO'";
+            
+            sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Codi = ?, TBAI_Id = ?, TBAI_Qr = ?, TBAI_Url = ?, TBAI_Queue = ?, TBAI_Xml = ?, TBAI_ImgQr = ?, TBAI_Data = ?, TBAI_mensaje = ? WHERE " +
+                                        "VEN_NumFactura = '" + txtFactura.Text + "' " +
+                                        "AND FACT_Tienda = '" + txtTienda.Text + "' " +
+                                        "AND FACT_Tipo = '" + txtTipo.Text +
+                                        "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
+            
+            sql_updateFactura_KO = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Mensaje = ? WHERE " +
+                                        "VEN_NumFactura = '" + txtFactura.Text + "' " +
+                                        "AND FACT_Tienda = '" + txtTienda.Text + "' " +
+                                        "AND FACT_Tipo = '" + txtTipo.Text +
+                                        "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
+        }
+
         public string factura(int codigo)
         {
             serie = "F";
@@ -166,16 +193,23 @@ namespace VeriFactu
                                         "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) " +
                                         "GROUP BY v.VEN_ImportTotal,v.VEN_Codi,v.VEN_Tienda,lv.LVN_Codi,LV.LVN_SUBTOTAL,c.CLI_Codi,c.CLI_Dni, c.CLI_Nom,c.CLI_Cognom1,c.CLI_Cognom2, c.CLI_CodiPostal,C.CLI_NumEdif, C.CLI_Piso,C.CLI_Puerta,C.CLI_Escalera, C.CLI_Domicili, lv.PRD_Item, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_DefAuditiu, c.CLI_EstatCivil ORDER BY LVN_Codi";
 
-            sql_checkTbaiCodi = "SELECT TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='F' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND VEN_NumFactura = '" + txtFactura.Text + "'";
+            //==========================================================================================================================================================================================================================================================================
 
-            sql_getTbaiCodi = "SELECT MAX(TBAI_Codi) + 1 as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='F' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
+            //sql_checkTbaiCodi = "SELECT TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='F' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND VEN_NumFactura = '" + txtFactura.Text + "'";
 
-            sql_getTbaiCodiReenvio = "SELECT TBAI_Codi as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='F' AND VEN_NumFactura = '" + txtFactura.Text + "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
+            //sql_getTbaiCodi = "SELECT MAX(TBAI_Codi) + 1 as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='F' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
 
-            sql_getVenFactAbono = "SELECT VEN_ImportBrut FROM VENDA WHERE VEN_NumFactura = '" + txtFactura.Text + "' " +
-                                       "AND VEN_Tienda = '" + txtTienda.Text + "' " +
-                                       "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' " +
-                                       "AND VEN_Referencia = 'ABONO'";
+            //sql_getTbaiCodiReenvio = "SELECT TBAI_Codi as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='F' AND VEN_NumFactura = '" + txtFactura.Text + "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
+
+            //sql_getVenFactAbono = "SELECT VEN_ImportBrut FROM VENDA WHERE VEN_NumFactura = '" + txtFactura.Text + "' " + "AND VEN_Tienda = '" + txtTienda.Text + "' " + "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' " + "AND VEN_Referencia = 'ABONO'";
+            
+            //sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Codi = ?, TBAI_Id = ?, TBAI_Qr = ?, TBAI_Url = ?, TBAI_Queue = ?, TBAI_Xml = ?, TBAI_ImgQr = ?, TBAI_Data = ?, TBAI_mensaje = ? WHERE " + "VEN_NumFactura = '" + txtFactura.Text + "' " + "AND FACT_Tienda = '" + txtTienda.Text + "' " + "AND FACT_Tipo = 'F' " + "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
+            
+            //sql_updateFactura_KO = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Mensaje = ? WHERE " + "VEN_NumFactura = '" + txtFactura.Text + "' " + "AND FACT_Tienda = '" + txtTienda.Text + "' " + "AND FACT_Tipo = 'F' " + "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
+            
+            //==========================================================================================================================================================================================================================================================================
+
+
             //id_vendafact = SelectOnce(connectionString, sql_getVenFactAbono); consulta para traer el valor de 'sql_getVenFactAbono'
 
             subs = id_vendafact.Split('.');//tratando el resultado de 'id_vendafact'
@@ -191,16 +225,6 @@ namespace VeriFactu
             //    System.Windows.Forms.Application.Exit();
             //}
 
-            sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Codi = ?, TBAI_Id = ?, TBAI_Qr = ?, TBAI_Url = ?, TBAI_Queue = ?, TBAI_Xml = ?, TBAI_ImgQr = ?, TBAI_Data = ?, TBAI_mensaje = ? WHERE " +
-                                        "VEN_NumFactura = '" + txtFactura.Text + "' " +
-                                        "AND FACT_Tienda = '" + txtTienda.Text + "' " +
-                                        "AND FACT_Tipo = 'F' " +
-                                        "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
-            sql_updateFactura_KO = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Mensaje = ? WHERE " +
-                                        "VEN_NumFactura = '" + txtFactura.Text + "' " +
-                                        "AND FACT_Tienda = '" + txtTienda.Text + "' " +
-                                        "AND FACT_Tipo = 'F' " +
-                                        "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
 
             sql_recargoEquivalenciaCliente = "SELECT CLI_RecEquivalencia " +
                                         "from CLIENT c inner join VENDA v on c.TIE_Codigo = v.VEN_CliFactTie and c.CLI_Codi = v.VEN_CliFact WHERE " +
@@ -275,16 +299,21 @@ namespace VeriFactu
                                        "AND v.VEN_Referencia = 'ABONO' " +
                                        "GROUP BY v.VEN_ImportTotal,v.VEN_Codi,v.VEN_Tienda,lv.LVN_Codi,LV.LVN_SUBTOTAL,c.CLI_Codi,c.CLI_Dni, c.CLI_Nom,c.CLI_Cognom1,c.CLI_Cognom2, c.CLI_CodiPostal,C.CLI_NumEdif, C.CLI_Piso,C.CLI_Puerta,C.CLI_Escalera, C.CLI_Domicili, lv.PRD_Item, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_DefAuditiu, c.CLI_EstatCivil ORDER BY LVN_Codi";
 
-            sql_checkTbaiCodi = "SELECT TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='FA' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND VEN_NumFactura = '" + txtFactura.Text + "'";//esto es para DF (no va aquí)
+            //==========================================================================================================================================================================================================================================================================
+            //sql_checkTbaiCodi = "SELECT TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='FA' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND VEN_NumFactura = '" + txtFactura.Text + "'";//esto es para DF (no va aquí)
 
-            sql_getTbaiCodi = "SELECT MAX(TBAI_Codi) + 1 as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='FA' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
+            //sql_getTbaiCodi = "SELECT MAX(TBAI_Codi) + 1 as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='FA' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
 
-            sql_getTbaiCodiReenvio = "SELECT TBAI_Codi as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='FA' AND VEN_NumFactura = '" + txtFactura.Text + "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
+            //sql_getTbaiCodiReenvio = "SELECT TBAI_Codi as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='FA' AND VEN_NumFactura = '" + txtFactura.Text + "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
 
-            sql_getVenFactAbono = "SELECT VEN_ImportBrut FROM VENDA WHERE VEN_NumFactura = '" + txtFactura.Text + "' " +
-                                       "AND VEN_Tienda = '" + txtTienda.Text + "' " +
-                                       "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' " +
-                                       "AND VEN_Referencia = 'ABONO'";
+            //sql_getVenFactAbono = "SELECT VEN_ImportBrut FROM VENDA WHERE VEN_NumFactura = '" + txtFactura.Text + "' " + "AND VEN_Tienda = '" + txtTienda.Text + "' " + "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' " + "AND VEN_Referencia = 'ABONO'";
+            
+            //sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Codi = ?, TBAI_Id = ?, TBAI_Qr = ?, TBAI_Url = ?, TBAI_Queue = ?, TBAI_Xml = ?, TBAI_ImgQr = ?, TBAI_Data = ?, TBAI_mensaje = ? WHERE " + "VEN_NumFactura = '" + txtFactura.Text + "' " + "AND FACT_Tienda = '" + txtTienda.Text + "' " + "AND FACT_Tipo = 'FA' " + "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
+            
+            //sql_updateFactura_KO = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Mensaje = ? WHERE " + "VEN_NumFactura = '" + txtFactura.Text + "' " + "AND FACT_Tienda = '" + txtTienda.Text + "' " + "AND FACT_Tipo = 'FA' " + "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
+            
+            //==========================================================================================================================================================================================================================================================================
+
             id_vendafact = Conection.SelectOnce(sql_getVenFactAbono); //consulta para traer el valor de 'sql_getVenFactAbono'
 
             subs = id_vendafact.Split('.');
@@ -306,17 +335,7 @@ namespace VeriFactu
             factura_abono_year = date_abo.ToString("yyyy");
             factura_abono = ven_abono.Rows[0].Field<Int32>("TBAI_Codi").ToString();
 
-            sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Codi = ?, TBAI_Id = ?, TBAI_Qr = ?, TBAI_Url = ?, TBAI_Queue = ?, TBAI_Xml = ?, TBAI_ImgQr = ?, TBAI_Data = ?, TBAI_mensaje = ? WHERE " +
-                                        "VEN_NumFactura = '" + txtFactura.Text + "' " +
-                                        "AND FACT_Tienda = '" + txtTienda.Text + "' " +
-                                        "AND FACT_Tipo = 'FA' " +
-                                        "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
 
-            sql_updateFactura_KO = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Mensaje = ? WHERE " +
-                                        "VEN_NumFactura = '" + txtFactura.Text + "' " +
-                                        "AND FACT_Tienda = '" + txtTienda.Text + "' " +
-                                        "AND FACT_Tipo = 'FA' " +
-                                        "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
 
             sql_recargoEquivalenciaCliente = "SELECT CLI_RecEquivalencia " +
                     "from CLIENT c inner join VENDA v on c.TIE_Codigo = v.VEN_CliFactTie and c.CLI_Codi = v.VEN_CliFact WHERE " +
@@ -372,7 +391,7 @@ namespace VeriFactu
                 {
                     if (txtReenvio.Text == "R")
                     {
-                        typeJson = "R1";
+                        this.buildCreditNote(CLI_Codi);
                     }
                     else
                     {
@@ -551,7 +570,7 @@ namespace VeriFactu
                 {
                     if (txtReenvio.Text == "R")
                     {
-                        typeJson = "R1";
+                        this.buildCreditNote(CLI_Codi);
                     }
                     else
                     {
@@ -583,7 +602,7 @@ namespace VeriFactu
                 char[] charsToTrim = { '*', ' ', '\'' };
                 dni = dni.Trim(charsToTrim);
 
-                apiRecipient.irsId = dni;
+                recipientArray.irsId = dni;
             }
             else
             {
@@ -595,8 +614,8 @@ namespace VeriFactu
 
             if (vendaTable.Rows[0].Field<string>("TipoDoc").ToString() != null)
             {
-              //apiRecipient.irsId = vendaTable.Rows[0].Field<string>("TipoDoc").ToString(); //IrsIdType
-              apiRecipient.irsId = vendaTable.Rows[0].Field<string>("TipoDoc");
+                //apiRecipient.irsId = vendaTable.Rows[0].Field<string>("TipoDoc").ToString(); //IrsIdType
+                recipientArray.idType = vendaTable.Rows[0].Field<string>("TipoDoc");
             }
             else
             {
@@ -608,7 +627,7 @@ namespace VeriFactu
 
             if (vendaTable.Rows[0].Field<string>("Nom").ToString() != null)
             {
-                apiRecipient.name = vendaTable.Rows[0].Field<string>("Nom").ToString();
+                recipientArray.name = vendaTable.Rows[0].Field<string>("Nom").ToString();
             }
             else
             {
@@ -620,7 +639,7 @@ namespace VeriFactu
 
             if (vendaTable.Rows[0].Field<string>("Pais") != null)
             {
-                apiRecipient.country = vendaTable.Rows[0].Field<string>("Pais").ToString();
+                recipientArray.country = vendaTable.Rows[0].Field<string>("Pais").ToString();
             }
             else
             {
@@ -653,14 +672,15 @@ namespace VeriFactu
                     tbai_codifactura = "1";
                 }
             }
-            apiId.number = tbai_codifactura;
+
+            idArray.number = tbai_codifactura;
 
             //=====================serie (serie de factura)
-            apiId.serie = serie + "/" + txtTienda.Text + "/" + txtYear.Text;
+            idArray.serie = serie + "/" + txtTienda.Text + "/" + txtYear.Text;
 
             //=====================issuedTime (issuedTime de factura)
             //hour = vendaTable.Rows[0].Field<TimeSpan>("VEN_Hora");
-            apiId.issuedTime = date_formated;
+            idArray.issuedTime = date_formated;
 
             //=====================description (description de factura)
             if (vendaTable.Rows[0].Field<string>("Nom").ToString() != null)
@@ -672,13 +692,20 @@ namespace VeriFactu
                 MessageBox.Show("Error: Falta el Nombre del Cliente");
                 System.Windows.Forms.Application.Exit();
             }
-            apiDescription.text = descripcion + serie + "/" + txtYear.Text + "/" + txtTienda.Text + "/" + tbai_codifactura + " EMITIDA A " + nombre_cliente;
-            apiDescription.operationDate = date_formated;
+            descriptionArray.text = descripcion + serie + "/" + txtYear.Text + "/" + txtTienda.Text + "/" + tbai_codifactura + " EMITIDA A " + nombre_cliente;
+            descriptionArray.operationDate = date_formated;
         }
 
-        public void buildCreditNote()
+        public void buildCreditNote(int CLI_Codi = 0)
         {
-            typeJson = "R5";
+            if (CLI_Codi == 0)
+            {
+                typeJson = "R5";
+            } else 
+            {
+                typeJson = "R1";
+            }
+
 
             apiCreditNote.style = "I";//OJO hacer un array de apiCreditNote ***********
             creditArray.serie = serie.Substring(0, 1) + "/" + txtTienda.Text + "/" + factura_abono_year;
@@ -689,6 +716,7 @@ namespace VeriFactu
 
 
         }
+
 
         public string deleteState()
         {
