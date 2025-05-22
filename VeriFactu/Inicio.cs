@@ -16,6 +16,7 @@ namespace VeriFactu
         apiVerifactu.VatLine apiVatLine;
         apiVerifactu.CreditNote apiCreditNote;
         apiVerifactu.InvoiceId apiInvoiceId;
+        apiVerifactu.Line apiLine;
         public Inicio()
         {
             InitializeComponent();
@@ -27,6 +28,7 @@ namespace VeriFactu
             apiVatLine = new apiVerifactu.VatLine();
             apiCreditNote = new apiVerifactu.CreditNote();
             apiInvoiceId = new apiVerifactu.InvoiceId();
+            apiLine = new apiVerifactu.Line();
         }
 
         static string respuesta;
@@ -69,6 +71,8 @@ namespace VeriFactu
         static string date_formated = System.String.Empty;
         static string nombre_cliente = System.String.Empty;
         static string typeJson = System.String.Empty;
+
+        //=============ARRAYS DE LA API PARA ARMAR INVOICE
         static ArrayList ids = new ArrayList();
         static apiVerifactu.Recipient recipientArray = new apiVerifactu.Recipient();
         static apiVerifactu.Id idArray = new apiVerifactu.Id();
@@ -76,6 +80,24 @@ namespace VeriFactu
         static apiVerifactu.VatLine vatLineArray = new apiVerifactu.VatLine();
         static apiVerifactu.InvoiceId creditArray = new apiVerifactu.InvoiceId();
         static apiVerifactu.CreditNote CreditNoteArray = new apiVerifactu.CreditNote();
+        static apiVerifactu.Line LineArray = new apiVerifactu.Line();
+
+        //=============VARIABLES DE TOTAL NETO PARA CALCULAR SEGÚN EL VATLINE
+
+        static Decimal total_neto_21 = 0;
+        static Decimal total_neto_10 = 0;
+        static Decimal total_neto_4 = 0;
+        static Decimal total_neto_0 = 0;
+        static Decimal total_neto = 0;
+        static Decimal totalAmountWithVat = 0;
+        static Decimal precio_linea_sin_iva_con_dto = 0;
+        static Decimal precio_linea_con_iva_sin_dto = 0;
+        static Decimal precio_linea_con_iva_con_dto = 0;
+        static Decimal precio_linea_sin_iva_sin_dto = 0;
+        static Decimal precio_unidad_con_iva_sin_dto = 0;
+        static Decimal precio_unidad_con_iva_con_dto = 0;
+        static Decimal precio_unidad_sin_iva_sin_dto = 0;
+        static Decimal vat_calc = 0;
 
         private void Inicio_Load(object sender, EventArgs e)
         {
@@ -97,14 +119,14 @@ namespace VeriFactu
             //    TicketBai_ApiKey = Conection.SelectOnce(sql_getListaParametros); //consulta para optiner 'TicketBai_ApiKey'
             //}
 
-            //sql_recargoEquivalencia = "SELECT PAR_Valor FROM TIENDADATOS WHERE TIE_Codigo = " + txtTienda.Text + " AND PAR_key = 'RecargodeEquivalencia'";
-            //recargo_equivalencia_empresa = Conection.SelectOnce(sql_recargoEquivalencia); //consulta para optiner 'recargo_equivalencia_empresa'
+            sql_recargoEquivalencia = "SELECT PAR_Valor FROM TIENDADATOS WHERE TIE_Codigo = " + txtTienda.Text + " AND PAR_key = 'RecargodeEquivalencia'";
+            recargo_equivalencia_empresa = Conection.SelectOnce(sql_recargoEquivalencia); //consulta para optiner 'recargo_equivalencia_empresa'
 
-            //if (recargo_equivalencia_empresa == null || recargo_equivalencia_empresa == "")
-            //{
-            //    sql_recargoEquivalencia = "SELECT PAR_Valor FROM LISTA_PARAMETROS WHERE PAR_key = 'RecargodeEquivalencia'";
-            //    recargo_equivalencia_empresa = Conection.SelectOnce(sql_recargoEquivalencia); //consulta para optiner 'recargo_equivalencia_empresa'
-            //}
+            if (recargo_equivalencia_empresa == null || recargo_equivalencia_empresa == "")
+            {
+                sql_recargoEquivalencia = "SELECT PAR_Valor FROM LISTA_PARAMETROS WHERE PAR_key = 'RecargodeEquivalencia'";
+                recargo_equivalencia_empresa = Conection.SelectOnce(sql_recargoEquivalencia); //consulta para optiner 'recargo_equivalencia_empresa'
+            }
 
             //recargo_equivalencia_cliente = Conection.SelectOnce(sql_recargoEquivalenciaCliente); //consulta para optiner 'recargo_equivalencia_empresa'
 
@@ -181,7 +203,10 @@ namespace VeriFactu
 
         public string factura(int codigo)
         {
+            this.sameSQLFacturas();
+
             serie = "F";
+
             sql_getVentas = "select v.VEN_ImportTotal, v.VEN_Codi, v.VEN_Tienda, lv.LVN_Codi, c.CLI_Codi, c.CLI_Dni, '02' AS Tipo, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_Nom + ' ' + c.CLI_Cognom1 + ' ' + c.CLI_Cognom2 as Nom, c.CLI_DefAuditiu AS Pais, ('0' + c.CLI_EstatCivil) as TipoDoc, c.CLI_CodiPostal," +
                                         "(case when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Puerta ' + C.CLI_Puerta when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera end) AS Domicili, " +
                                         "lv.PRD_Item, cast(sum((LV.LVN_SUBTOTAL - (LV.LVN_SUBTOTAL * V.VEN_Descompte) / 100)) as numeric (10, 2)) as LVN_PreuDtoLineaVenta,LV.LVN_SUBTOTAL as LVN_PreuDtoLinea, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA " +
@@ -192,22 +217,6 @@ namespace VeriFactu
                                         "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
                                         "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) " +
                                         "GROUP BY v.VEN_ImportTotal,v.VEN_Codi,v.VEN_Tienda,lv.LVN_Codi,LV.LVN_SUBTOTAL,c.CLI_Codi,c.CLI_Dni, c.CLI_Nom,c.CLI_Cognom1,c.CLI_Cognom2, c.CLI_CodiPostal,C.CLI_NumEdif, C.CLI_Piso,C.CLI_Puerta,C.CLI_Escalera, C.CLI_Domicili, lv.PRD_Item, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_DefAuditiu, c.CLI_EstatCivil ORDER BY LVN_Codi";
-
-            //==========================================================================================================================================================================================================================================================================
-
-            //sql_checkTbaiCodi = "SELECT TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='F' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND VEN_NumFactura = '" + txtFactura.Text + "'";
-
-            //sql_getTbaiCodi = "SELECT MAX(TBAI_Codi) + 1 as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='F' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
-
-            //sql_getTbaiCodiReenvio = "SELECT TBAI_Codi as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='F' AND VEN_NumFactura = '" + txtFactura.Text + "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
-
-            //sql_getVenFactAbono = "SELECT VEN_ImportBrut FROM VENDA WHERE VEN_NumFactura = '" + txtFactura.Text + "' " + "AND VEN_Tienda = '" + txtTienda.Text + "' " + "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' " + "AND VEN_Referencia = 'ABONO'";
-            
-            //sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Codi = ?, TBAI_Id = ?, TBAI_Qr = ?, TBAI_Url = ?, TBAI_Queue = ?, TBAI_Xml = ?, TBAI_ImgQr = ?, TBAI_Data = ?, TBAI_mensaje = ? WHERE " + "VEN_NumFactura = '" + txtFactura.Text + "' " + "AND FACT_Tienda = '" + txtTienda.Text + "' " + "AND FACT_Tipo = 'F' " + "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
-            
-            //sql_updateFactura_KO = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Mensaje = ? WHERE " + "VEN_NumFactura = '" + txtFactura.Text + "' " + "AND FACT_Tienda = '" + txtTienda.Text + "' " + "AND FACT_Tipo = 'F' " + "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
-            
-            //==========================================================================================================================================================================================================================================================================
 
 
             //id_vendafact = SelectOnce(connectionString, sql_getVenFactAbono); consulta para traer el valor de 'sql_getVenFactAbono'
@@ -298,21 +307,6 @@ namespace VeriFactu
                                        "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
                                        "AND v.VEN_Referencia = 'ABONO' " +
                                        "GROUP BY v.VEN_ImportTotal,v.VEN_Codi,v.VEN_Tienda,lv.LVN_Codi,LV.LVN_SUBTOTAL,c.CLI_Codi,c.CLI_Dni, c.CLI_Nom,c.CLI_Cognom1,c.CLI_Cognom2, c.CLI_CodiPostal,C.CLI_NumEdif, C.CLI_Piso,C.CLI_Puerta,C.CLI_Escalera, C.CLI_Domicili, lv.PRD_Item, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_DefAuditiu, c.CLI_EstatCivil ORDER BY LVN_Codi";
-
-            //==========================================================================================================================================================================================================================================================================
-            //sql_checkTbaiCodi = "SELECT TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='FA' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND VEN_NumFactura = '" + txtFactura.Text + "'";//esto es para DF (no va aquí)
-
-            //sql_getTbaiCodi = "SELECT MAX(TBAI_Codi) + 1 as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='FA' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
-
-            //sql_getTbaiCodiReenvio = "SELECT TBAI_Codi as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='FA' AND VEN_NumFactura = '" + txtFactura.Text + "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
-
-            //sql_getVenFactAbono = "SELECT VEN_ImportBrut FROM VENDA WHERE VEN_NumFactura = '" + txtFactura.Text + "' " + "AND VEN_Tienda = '" + txtTienda.Text + "' " + "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' " + "AND VEN_Referencia = 'ABONO'";
-            
-            //sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Codi = ?, TBAI_Id = ?, TBAI_Qr = ?, TBAI_Url = ?, TBAI_Queue = ?, TBAI_Xml = ?, TBAI_ImgQr = ?, TBAI_Data = ?, TBAI_mensaje = ? WHERE " + "VEN_NumFactura = '" + txtFactura.Text + "' " + "AND FACT_Tienda = '" + txtTienda.Text + "' " + "AND FACT_Tipo = 'FA' " + "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
-            
-            //sql_updateFactura_KO = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Mensaje = ? WHERE " + "VEN_NumFactura = '" + txtFactura.Text + "' " + "AND FACT_Tienda = '" + txtTienda.Text + "' " + "AND FACT_Tipo = 'FA' " + "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
-            
-            //==========================================================================================================================================================================================================================================================================
 
             id_vendafact = Conection.SelectOnce(sql_getVenFactAbono); //consulta para traer el valor de 'sql_getVenFactAbono'
 
@@ -407,6 +401,8 @@ namespace VeriFactu
 
         public string ticket()
         {
+            this.sameSQLFacturas();
+
             serie = "T";
             sql_getVentas = "select v.VEN_ImportTotal, v.VEN_Codi, v.VEN_Tienda, lv.LVN_Codi, c.CLI_Dni, '02' AS Tipo, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_Nom + ' ' + c.CLI_Cognom1 + ' ' + c.CLI_Cognom2 as Nom, c.CLI_DefAuditiu AS Pais, ('0' + c.CLI_EstatCivil) as TipoDoc, c.CLI_CodiPostal," +
                                       "(case when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Puerta ' + C.CLI_Puerta when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera end) AS Domicili, " +
@@ -694,6 +690,116 @@ namespace VeriFactu
             }
             descriptionArray.text = descripcion + serie + "/" + txtYear.Text + "/" + txtTienda.Text + "/" + tbai_codifactura + " EMITIDA A " + nombre_cliente;
             descriptionArray.operationDate = date_formated;
+
+            //=====================vatLine (VatLine de factura)
+
+            //vatLineArray.@base = 0;
+
+            foreach (DataRow row in vendaTable.Rows)
+            {
+                LineArray.description = row.Field<string>("PRD_Item").ToString();
+                LineArray.quantity = Math.Abs(row.Field<Int16>("LVN_Uds"));
+                LineArray.vat = Convert.ToInt16(row.Field<Decimal>("LVN_IVA"));
+
+                vat_calc = (1 + (Decimal.Divide(LineArray.vat, 100)));
+
+                precio_linea_con_iva_sin_dto = LineArray.quantity * row.Field<Decimal>("LVN_PreuUnitat");
+                precio_linea_con_iva_con_dto = row.Field<Decimal>("LVN_PreuDtoLineaVenta");
+                precio_linea_sin_iva_sin_dto = Math.Round(((LineArray.quantity * row.Field<Decimal>("LVN_PreuUnitat")) / vat_calc), 4);
+                precio_linea_sin_iva_con_dto = Math.Round((row.Field<Decimal>("LVN_PreuDtoLineaVenta") / vat_calc), 4);
+                precio_unidad_con_iva_sin_dto = row.Field<Decimal>("LVN_PreuUnitat");
+                precio_unidad_con_iva_con_dto = row.Field<Decimal>("LVN_PreuDtoLineaVenta") / LineArray.quantity;
+                precio_unidad_sin_iva_sin_dto = Math.Round((row.Field<Decimal>("LVN_PreuUnitat") / vat_calc), 4);
+                LineArray.price = Math.Round(((row.Field<Decimal>("LVN_PreuDtoLineaVenta") / vat_calc) / LineArray.quantity), 2);
+                LineArray.amountWithVat = precio_linea_con_iva_con_dto;
+                totalAmountWithVat = totalAmountWithVat + LineArray.amountWithVat;
+                total_neto = total_neto + precio_linea_con_iva_con_dto;
+
+                if (precio_linea_sin_iva_con_dto == 0)
+                {
+                    LineArray.price = 0;
+                }
+                else
+                {
+                    switch (LineArray.vat)
+                    {
+                        case 21:
+                            total_neto_21 += precio_linea_sin_iva_con_dto;
+                            break;
+                        case 10:
+                            total_neto_10 += precio_linea_sin_iva_con_dto;
+                            break;
+                        case 4:
+                            total_neto_4 += precio_linea_sin_iva_con_dto;
+                            break;
+                        case 0:
+                            total_neto_0 += precio_linea_sin_iva_con_dto;
+                            break;
+                    }
+                }
+            }
+
+
+            if ((total_neto_21 > 0) || (total_neto_21 < 0))
+            {
+                vatLineArray.@base = Math.Round(total_neto_21, 2);
+                vatLineArray.rate = 21;
+                vatLineArray.amount = Math.Round(total_neto_21 * Convert.ToDecimal(0.21), 2);
+                vatLineArray.vatOperation = "S1";
+                if (recargo_equivalencia_empresa == "S")
+                {
+                    vatLineArray.isUsingSimplifiedRegime = true;
+                }
+            }
+
+            if ((total_neto_10 > 0) || (total_neto_10 < 0))
+            {
+                vatLineArray.@base = Math.Round(total_neto_10, 2);
+                vatLineArray.rate = 10;
+                vatLineArray.amount = Math.Round(total_neto_10 * Convert.ToDecimal(0.10), 2);
+                vatLineArray.vatOperation = "S1";
+                if (recargo_equivalencia_empresa == "S")
+                {
+                    vatLineArray.isUsingSimplifiedRegime = true;
+                }
+            }
+
+            if ((total_neto_4 > 0) || (total_neto_4 < 0))
+            {
+                vatLineArray.@base = Math.Round(total_neto_4, 2);
+                vatLineArray.rate = 4;
+                vatLineArray.amount = Math.Round(total_neto_4 * Convert.ToDecimal(0.04), 2);
+                vatLineArray.vatOperation = "S1";
+                if (recargo_equivalencia_empresa == "S")
+                {
+                    vatLineArray.isUsingSimplifiedRegime = true;
+                }
+            }
+
+            if ((total_neto_0 > 0) || (total_neto_0 < 0))
+            {
+                vatLineArray.amount = 0;
+                vatLineArray.@base = Math.Round(total_neto_0, 2);
+                vatLineArray.rate = 0;
+                vatLineArray.vatOperation = "E1";
+                if (recargo_equivalencia_empresa == "S")
+                {
+                    vatLineArray.isUsingSimplifiedRegime = true;
+                }
+            }
+
+
+            if (recargo_equivalencia_empresa == "S")
+            {
+                vatLineArray.vatKeys = "18";
+            }
+            else
+            {
+                vatLineArray.vatKeys = "01"; //VatKey 
+            }
+
+
+
         }
 
         public void buildCreditNote(int CLI_Codi = 0)

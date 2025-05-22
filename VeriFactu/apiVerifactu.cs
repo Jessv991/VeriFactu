@@ -59,17 +59,30 @@ namespace VeriFactu
         public class VatLine 
         {
             //pendiente vatOperation
-            public int @base { get; set; }
+            public Decimal @base { get; set; }
             public int rate { get; set; }
-            public int amount { get; set; }
-            public int rate2 { get; set; }
-            public int amount2 { get; set; }
-            //pendiente hacer el tipo VatType que es string y VatExemptReason que también es string de este componente vatOperation
-            public string vatOperation { get; set; }
-            //pendiente vatKey de tipo vatKey
+            public Decimal amount { get; set; }
+            public Decimal rate2 { get; set; }//DAVID NO USA
+            public Decimal amount2 { get; set; }//DAVID NO USA
+            public string vatOperation { get; set; }//pendiente hacer el tipo VatType que es string y VatExemptReason que también es string de este componente vatOperation
+            public string vatKeys { get; set; }
             public bool isUsingSimplifiedRegime { get; set; }
         }
 
+        public class Line
+        {
+            public string description { get; set; }
+            public Int16 quantity { get; set; }
+            public Decimal price { get; set; }
+            //public Decimal discount { get; set; }
+            //public Decimal amount { get; set; }
+            public Decimal amountWithVat { get; set; }
+            public Int16 vat { get; set; }
+            //public Decimal discountAmount { get; set; }
+
+            //public string merchandiseOrService { get; set; }
+
+        }
 
 
         //=================FACTURAS RECTIFICATIVAS===============
@@ -86,6 +99,10 @@ namespace VeriFactu
             public string number { get; set; }//número de copias
             public string issuedTime { get; set; }
         }
+
+
+
+
 
     }
 }
