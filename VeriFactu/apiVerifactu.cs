@@ -90,6 +90,25 @@ namespace VeriFactu
             public string issuedTime { get; set; }
         }
 
+        //=================RESPUESTA API===============
+
+        public class apiResponse
+        {
+            public string qrcode { get; set; }
+            public chainInfo chainInfo { get; set; }
+            public string verifactuXml { get; set; }
+            public string verifactuUrl { get; set; }
+            public string queueId { get; set; }
+            public string message { get; set; }
+        }
+
+        public class chainInfo
+        {
+            public string issuerIrsId { get; set; }
+            public string issuedTime { get; set; }
+            public string number { get; set; }
+            public string hash { get; set; }
+        }
 
 
 

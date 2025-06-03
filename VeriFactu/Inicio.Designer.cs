@@ -126,7 +126,7 @@
             label1.BorderStyle = BorderStyle.None;
             label1.Location = new Point(21, 23);
             label1.Name = "label1";
-            label1.Size = new Size(108, 16);
+            label1.Size = new Size(110, 16);
             label1.TabIndex = 10;
             label1.Text = "Tipo F FA T TA D S";
             // 

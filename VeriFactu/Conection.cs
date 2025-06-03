@@ -181,6 +181,55 @@ namespace VeriFactu
         }
 
 
+        public static bool ExecuteCommand(OdbcCommand cmd)
+        {
+            /*string parametrosInfo = "SQL: " + cmd.CommandText + "\n\nParámetros:\n";
+            
+            foreach (OdbcParameter param in cmd.Parameters)
+            {
+                string valorString;
+            
+                if (param.Value is byte[])
+                    valorString = $"[byte[] de longitud {((byte[])param.Value).Length}]";
+                else
+                    valorString = param.Value?.ToString() ?? "[null]";
+            
+                parametrosInfo += $"- Tipo: {param.OdbcType}, Valor: {valorString}\n";
+            }
+            
+            MessageBox.Show(parametrosInfo);*/
+
+            bool resultado = false;
+
+            try
+            {
+
+                using (OdbcConnection connection = new OdbcConnection(connectionString))
+                {
+                    cmd.Connection = connection;
+                    connection.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error al ejecutar el comando ODBC: " + ex.Message);
+            }
+            finally
+            {
+                // Cerramos la conexión si está abierta
+                if (connection.State == ConnectionState.Open)
+                {
+                    connection.Close();
+                }
+                resultado = true;
+            }
+
+            return resultado;
+        }
+
+
+
 
 
     }

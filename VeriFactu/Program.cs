@@ -1,3 +1,6 @@
+using System.Data.SqlTypes;
+using static System.ComponentModel.Design.ObjectSelectorEditor;
+
 namespace VeriFactu
 {
     internal static class Program
@@ -12,22 +15,52 @@ namespace VeriFactu
             Application.SetCompatibleTextRenderingDefault(false);
             ApplicationConfiguration.Initialize();
 
-            Inicio form = new Inicio();
+            string tienda = args[1];
+            string sql = $"SELECT PAR_Valor FROM \"indo\".\"TIENDADATOS\" WHERE TIE_Codigo = '{tienda}' AND PAR_Key = 'TicketBai_Tipo';";
 
-            if (args.Length >= 4)
-            {
-                form.getVEN_Tipo(args[0]);
-                form.getVEN_Numfactura(args[1]);
-                form.getVEN_Tienda(args[2]);
-                form.getVEN_Year(args[3]);
+            string TicketBai_Tipo = Conection.SelectOnce(sql);
 
-                if (args.Length >= 5)
+
+            if (TicketBai_Tipo == "VeriFactu") {
+
+                Inicio form = new Inicio();
+                if (args.Length >= 4)
                 {
-                    form.getReenvio(args[4]);
+                    form.getVEN_Tipo(args[0]);
+                    form.getVEN_Tienda(args[1]);
+                    form.getVEN_Numfactura(args[2]);
+                    form.getVEN_Year(args[3]);
+
+                    if (args.Length >= 5)
+                    {
+                        form.getReenvio(args[4]);
+                    }
                 }
+                Application.Run(form);
+            }
+            else if (TicketBai_Tipo == "TicketBai")
+            {
+                TicketBai form = new TicketBai();
+
+                if (args.Length >= 4)
+                {
+                    form.getVEN_Tipo(args[0]);
+                    form.getVEN_Tienda(args[1]);
+                    form.getVEN_Numfactura(args[2]);
+                    form.getVEN_Year(args[3]);
+
+                    if (args.Length >= 5)
+                    {
+                        form.getReenvio(args[4]);
+                    }
+                }
+                Application.Run(form);
             }
 
-            Application.Run(form);
+
+
+
+
         }
     }
 }
