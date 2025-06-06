@@ -185,7 +185,7 @@ namespace VeriFactu
             }
             else if (txtTipo.Text[0] == 'D' || txtTipo.Text[0] == 'S')//cogemos la pprimera letra para identificar que tiene 'D' y as� saber que es delete, una vez hecho eso en la funci�n identifico el tipo de delete
             {
-                respuesta = this.deleteState();
+                respuesta = this.deleteOrState();
                 MessageBox.Show("OK: " + respuesta, "�xito", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
             else
@@ -1150,7 +1150,7 @@ namespace VeriFactu
         }
 
 
-        public string deleteState()
+        public string deleteOrState()
         {
             string sql_tipoForT= "SELECT FACT_Tipo FROM FACTURAS_HACIENDA_AUTO WHERE TBAI_Queue = '" + txtFactura.Text + "'";
             string tipoForT= Conection.SelectOnce(sql_tipoForT);
