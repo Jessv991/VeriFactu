@@ -712,7 +712,7 @@ namespace VeriFactu
         {
             //=====================URL JSON===================
 
-            var client = new RestClient(new RestClientOptions(TicketBai_DB)
+            var client = new RestClient(new RestClientOptions(TicketBai_DB.Trim())
             {
                 MaxTimeout = -1 // -1 significa sin timeout
             });
@@ -989,7 +989,7 @@ namespace VeriFactu
             request.AddHeader("Content-Type", "application/json; charset=utf-8");
             request.AddHeader("Accept", "application/json");
             request.AddHeader("User-Agent", "RestSharpClient/1.0");
-            request.AddHeader("API-KEY", TicketBai_ApiKey);
+            request.AddHeader("API-KEY", TicketBai_ApiKey.Trim());
             request.AddStringBody(JSONresult, DataFormat.Json); // JSONresult es tu string JSON
 
             RestResponse response = client.Execute(request);
@@ -1155,7 +1155,7 @@ namespace VeriFactu
             string sql_tipoForT= "SELECT FACT_Tipo FROM FACTURAS_HACIENDA_AUTO WHERE TBAI_Queue = '" + txtFactura.Text + "'";
             string tipoForT= Conection.SelectOnce(sql_tipoForT);
 
-            var client = new RestClient(new RestClientOptions(TicketBai_DB)
+            var client = new RestClient(new RestClientOptions(TicketBai_DB.Trim())
             {
                 MaxTimeout = -1 // -1 significa sin timeout
             });
@@ -1194,7 +1194,7 @@ namespace VeriFactu
             request.AddHeader("Content-Type", "application/json; charset=utf-8");
             request.AddHeader("Accept", "application/json");
             request.AddHeader("User-Agent", "RestSharpClient/1.0");
-            request.AddHeader("API-KEY", TicketBai_ApiKey);
+            request.AddHeader("API-KEY", TicketBai_ApiKey.Trim());
 
             RestResponse response = client.Execute(request);
 
