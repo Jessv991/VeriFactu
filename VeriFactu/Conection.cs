@@ -183,7 +183,36 @@ namespace VeriFactu
 
         public static bool ExecuteCommand(OdbcCommand cmd)
         {
-            /*string parametrosInfo = "SQL: " + cmd.CommandText + "\n\nParámetros:\n";
+            bool resultado = false;
+
+            try
+            {
+
+                using (OdbcConnection connection = new OdbcConnection(connectionString))
+                {
+                    cmd.Connection = connection;
+                    connection.Open();
+                    cmd.ExecuteNonQuery();
+                    resultado = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error al ejecutar el comando ODBC: " + ex.Message);
+            }
+            finally
+            {
+                // Cerramos la conexión si está abierta
+                if (connection.State == ConnectionState.Open)
+                {
+                    connection.Close();
+                }
+            }
+
+            return resultado;
+        }
+
+        /*string parametrosInfo = "SQL: " + cmd.CommandText + "\n\nParámetros:\n";
             
             foreach (OdbcParameter param in cmd.Parameters)
             {
@@ -198,38 +227,6 @@ namespace VeriFactu
             }
             
             MessageBox.Show(parametrosInfo);*/
-
-            bool resultado = false;
-
-            try
-            {
-
-                using (OdbcConnection connection = new OdbcConnection(connectionString))
-                {
-                    cmd.Connection = connection;
-                    connection.Open();
-                    cmd.ExecuteNonQuery();
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error al ejecutar el comando ODBC: " + ex.Message);
-            }
-            finally
-            {
-                // Cerramos la conexión si está abierta
-                if (connection.State == ConnectionState.Open)
-                {
-                    connection.Close();
-                }
-                resultado = true;
-            }
-
-            return resultado;
-        }
-
-
-
 
 
     }

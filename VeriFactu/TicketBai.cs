@@ -1,12 +1,17 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using static VeriFactu.apiVerifactu;
+using static VeriFactu.pathServer;
 
 namespace VeriFactu
 {
@@ -16,6 +21,615 @@ namespace VeriFactu
         {
             InitializeComponent();
             //MessageBox.Show("Es TicketBai");
+        }
+
+        static string respuesta;
+        static string sql_getVentas = System.String.Empty;
+        static string sql_getTbaiCodi = System.String.Empty;
+        static string sql_getTbaiCodiReenvio = System.String.Empty;
+        static string sql_checkTbaiCodi = System.String.Empty;
+        static string sql_getListaParametros = System.String.Empty;
+        static string sql_getVenFactAbono = System.String.Empty;
+        static string sql_getFechaVentaAbono = System.String.Empty;
+        static string sql_updateFactura = System.String.Empty;
+        static string sql_updateFactura_KO = System.String.Empty;
+        static string sql_getVenImportTotal = System.String.Empty;
+        static string sql_recargoEquivalenciaCliente = System.String.Empty;
+        static string sql_recargoEquivalencia = System.String.Empty;
+        static string sql_datosIssureTienda = System.String.Empty;
+        static string recargo_equivalencia_empresa = System.String.Empty;
+        static string recargo_equivalencia_cliente = System.String.Empty;
+        static string TicketBai_DB = System.String.Empty;
+        static string TicketBai_ApiKey = System.String.Empty;
+        static string ImportTotalString = System.String.Empty;
+        static decimal ImporTotalCheck = 0;
+        static string serie = System.String.Empty;
+        static string descripcion = System.String.Empty;
+        static string rectificactiva = "N";
+        static string factura_a_cliente = "S";
+        static decimal importe_minimo;
+        static string[]? subs;
+        static string id_vendafact = System.String.Empty;
+        static DataTable ven_abono = new DataTable();
+        static DataTable vendaTable = new DataTable();
+        static DataTable datosIssureTiendaTable = new DataTable();
+        static DateTime date_abo = new DateTime();
+        static string date_abo_formated = "";
+        static string factura_abono_year = System.String.Empty;
+        static string factura_abono = System.String.Empty;
+        static string filename = System.String.Empty;
+        static DateTime date = new DateTime();
+
+
+        TimeSpan hour = new TimeSpan();
+        static string tbai_codifactura = System.String.Empty;
+        static string date_formated = System.String.Empty;
+        static string nombre_cliente = System.String.Empty;
+
+        //=============ARRAYS DE LA API PARA ARMAR INVOICE
+        static ArrayList ids = new ArrayList();
+        static apiVerifactu.Invoice InvoiceArray = new apiVerifactu.Invoice();
+        static apiVerifactu.Issuer IssuerArray = new apiVerifactu.Issuer();
+        static apiVerifactu.Recipient recipientArray = new apiVerifactu.Recipient();
+        static apiVerifactu.Id idArray = new apiVerifactu.Id();
+        static apiVerifactu.Description descriptionArray = new apiVerifactu.Description();
+        static apiVerifactu.VatLine vatLineArray = new apiVerifactu.VatLine();
+        static apiVerifactu.InvoiceId InvoiceIdArray = new apiVerifactu.InvoiceId();
+        static apiVerifactu.CreditNote CreditNoteArray = new apiVerifactu.CreditNote();
+
+        //=============VARIABLES DE TOTAL NETO PARA CALCULAR SEGÚN EL VATLINE
+
+        static Decimal total_neto_21 = 0;
+        static Decimal total_neto_10 = 0;
+        static Decimal total_neto_4 = 0;
+        static Decimal total_neto_0 = 0;
+        static Decimal total_neto = 0;
+        static Decimal totalAmountWithVat = 0;
+        static Decimal precio_linea_sin_iva_con_dto = 0;
+        static Decimal precio_linea_con_iva_sin_dto = 0;
+        static Decimal precio_linea_con_iva_con_dto = 0;
+        static Decimal precio_linea_sin_iva_sin_dto = 0;
+        static Decimal precio_unidad_con_iva_sin_dto = 0;
+        static Decimal precio_unidad_con_iva_con_dto = 0;
+        static Decimal precio_unidad_sin_iva_sin_dto = 0;
+        static Decimal vat_calc = 0;
+
+        //=============VARIABLES PARA COMPARAR Y VERIFICAR IVA
+        static int LVN_Uds;
+        static Decimal LVN_IVA = 0;
+
+
+        static string path_server = pathServer.getPathServer();
+
+        private void Inicio_Load(object sender, EventArgs e)
+        {
+            //client.Timeout = -1;
+            date_formated = date.ToString("yyyy-MM-dd");
+            //conection.openConection();
+
+            sql_getListaParametros = "SELECT PAR_Valor FROM TIENDADATOS WHERE TIE_Codigo = " + txtTienda.Text + " AND PAR_Key = 'TicketBai_DB'";
+            TicketBai_DB = Conection.SelectOnce(sql_getListaParametros); //consulta para optiner 'TicketBai_DB'
+            if (string.IsNullOrEmpty(TicketBai_DB))
+            {
+                sql_getListaParametros = "SELECT PAR_Valor FROM LISTA_PARAMETROS WHERE PAR_Key = 'TicketBai_DB'";
+                TicketBai_DB = Conection.SelectOnce(sql_getListaParametros); //consulta para optiner 'TicketBai_DB'
+                sql_getListaParametros = "SELECT PAR_Valor FROM LISTA_PARAMETROS WHERE PAR_Key = 'TicketBai_ApiKey'";
+                TicketBai_ApiKey = Conection.SelectOnce(sql_getListaParametros); //consulta para optiner 'TicketBai_ApiKey'
+            }
+            else
+            {
+                sql_getListaParametros = "SELECT PAR_Valor FROM TIENDADATOS WHERE TIE_Codigo = " + txtTienda.Text + " AND PAR_Key = 'TicketBai_ApiKey'";
+                TicketBai_ApiKey = Conection.SelectOnce(sql_getListaParametros); //consulta para optiner 'TicketBai_ApiKey'
+            }
+
+            sql_recargoEquivalencia = "SELECT PAR_Valor FROM TIENDADATOS WHERE TIE_Codigo = " + txtTienda.Text + " AND PAR_key = 'RecargodeEquivalencia'";
+            recargo_equivalencia_empresa = Conection.SelectOnce(sql_recargoEquivalencia); //consulta para optiner 'recargo_equivalencia_empresa'
+
+            if (recargo_equivalencia_empresa == null || recargo_equivalencia_empresa == "")
+            {
+                sql_recargoEquivalencia = "SELECT PAR_Valor FROM LISTA_PARAMETROS WHERE PAR_key = 'RecargodeEquivalencia'";
+                recargo_equivalencia_empresa = Conection.SelectOnce(sql_recargoEquivalencia); //consulta para optiner 'recargo_equivalencia_empresa'
+            }
+
+            //=====================CONSULTA PARA OBTENER ISSURE=======================================
+
+            sql_datosIssureTienda = "SELECT (SELECT PAR_Valor FROM indo.TIENDADATOS WHERE PAR_Key = 'NIF' AND TIE_Codigo = " + txtTienda.Text + ") AS NIF, (SELECT PAR_Valor FROM indo.TIENDADATOS WHERE PAR_Key = 'RegMercantil' AND TIE_Codigo = " + txtTienda.Text + ") AS RegMercantil;";
+
+            //recargo_equivalencia_cliente = Conection.SelectOnce(sql_recargoEquivalenciaCliente); //consulta para optiner 'recargo_equivalencia_empresa'
+
+            //=========================importe minimo para pasar datos del cliente=========================
+
+            string sql_getImporteMinimo = "SELECT PAR_Valor FROM TIENDADATOS WHERE TIE_Codigo = " + txtTienda.Text + " AND PAR_Key = 'TicketBai_ImporteMinimo'";
+            importe_minimo = Convert.ToDecimal(Conection.SelectOnce(sql_getImporteMinimo));
+
+            //=========================CONDICIÓN SEGÚN EL TIPO DE FACTURA=========================
+
+            if (txtTipo.Text == "F")
+            {
+                respuesta = this.factura(1);
+                MessageBox.Show("OK: " + respuesta, "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else if (txtTipo.Text == "FA")
+            {
+                respuesta = this.facturaAbono();
+                MessageBox.Show("OK: " + respuesta, "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else if (txtTipo.Text == "T")
+            {
+                respuesta = this.ticket();
+                MessageBox.Show("OK: " + respuesta, "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else if (txtTipo.Text == "TA")
+            {
+                respuesta = this.ticketAbono();
+                MessageBox.Show("OK: " + respuesta, "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else if (txtTipo.Text[0] == 'D')//cogemos la pprimera letra para identificar que tiene 'D' y así saber que es delete, una vez hecho eso en la función identifico el tipo de delete
+            {
+                respuesta = this.deleteState();
+                MessageBox.Show("OK: " + respuesta, "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else if (txtTipo.Text[0] == 'S')//cogemos la pprimera letra para identificar que tiene 'S' y así saber que es state, una vez hecho eso en la función identifico el tipo de state
+            {
+                respuesta = this.deleteState();
+                MessageBox.Show("OK: " + respuesta, "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("Error: El tipo de factura es incorrecto.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
+
+        }
+
+
+        public void sameSQLFacturas()
+        {
+            sql_checkTbaiCodi = "SELECT TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='" + txtTipo.Text + "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND VEN_NumFactura = '" + txtFactura.Text + "'";
+
+            sql_getTbaiCodi = "SELECT MAX(TBAI_Codi) + 1 as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='" + txtTipo.Text + "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
+
+            sql_getTbaiCodiReenvio = "SELECT TBAI_Codi as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='" + txtTipo.Text + "' AND VEN_NumFactura = '" + txtFactura.Text + "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
+
+            sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Codi = ?, TBAI_Id = ?, TBAI_Qr = ?, TBAI_Url = ?, TBAI_Queue = ?, TBAI_Xml = ?, TBAI_ImgQr = ?, TBAI_Data = ?, TBAI_Hash  = ?, TBAI_Estado=?, TBAI_UserId=?, TBAI_mensaje = ? WHERE " +
+                                        "VEN_NumFactura = '" + txtFactura.Text + "' " +
+                                        "AND FACT_Tienda = '" + txtTienda.Text + "' " +
+                                        "AND FACT_Tipo = '" + txtTipo.Text +
+                                        "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
+
+            sql_updateFactura_KO = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Mensaje = ? WHERE " +
+                                        "VEN_NumFactura = '" + txtFactura.Text + "' " +
+                                        "AND FACT_Tienda = '" + txtTienda.Text + "' " +
+                                        "AND FACT_Tipo = '" + txtTipo.Text +
+                                        "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
+
+        }
+
+        public void sameSQLTicket()
+        {
+            sql_checkTbaiCodi = "SELECT TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='" + txtTipo.Text + "' AND YEAR(VEN_DataTicket) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND VEN_Ticket = '" + txtFactura.Text + "'";//esto es para DF (no va aquí)
+
+            sql_getTbaiCodi = "SELECT MAX(TBAI_Codi) + 1 as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='" + txtTipo.Text + "' AND YEAR(VEN_DataTicket) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
+
+            sql_getTbaiCodiReenvio = "SELECT TBAI_Codi as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='" + txtTipo.Text + "' AND VEN_Ticket = '" + txtFactura.Text + "' AND YEAR(VEN_DataTicket) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
+
+            sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Codi = ?, TBAI_Id = ?, TBAI_Qr = ?, TBAI_Url = ?, TBAI_Queue = ?, TBAI_Xml = ?, TBAI_ImgQr = ?, TBAI_Data = ?, TBAI_Hash  = ?, TBAI_Estado=?, TBAI_UserId=?, TBAI_mensaje = ? WHERE " +
+                                        "VEN_Ticket = '" + txtFactura.Text + "' " +
+                                        "AND FACT_Tienda = '" + txtTienda.Text + "' " +
+                                        "AND FACT_Tipo = '" + txtTipo.Text +
+                                        "' AND YEAR(VEN_DataTicket) = '" + txtYear.Text + "'";
+
+            sql_updateFactura_KO = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Mensaje = ? WHERE " +
+                                        "VEN_Ticket = '" + txtFactura.Text + "' " +
+                                        "AND FACT_Tienda = '" + txtTienda.Text + "' " +
+                                        "AND FACT_Tipo = '" + txtTipo.Text +
+                                        "' AND YEAR(VEN_DataTicket) = '" + txtYear.Text + "'";
+
+        }
+
+        public string factura(int codigo)
+        {
+            this.sameSQLFacturas();
+
+            serie = "F";
+
+            sql_getVentas = "select v.VEN_ImportTotal, v.VEN_Codi, v.VEN_Tienda, lv.LVN_Codi, c.CLI_Codi, c.CLI_Dni, '02' AS Tipo, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_Nom + ' ' + c.CLI_Cognom1 + ' ' + c.CLI_Cognom2 as Nom, c.CLI_DefAuditiu AS Pais, ('0' + c.CLI_EstatCivil) as TipoDoc, c.CLI_CodiPostal," +
+                                        "(case when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Puerta ' + C.CLI_Puerta when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera end) AS Domicili, " +
+                                        "lv.PRD_Item, cast(sum((LV.LVN_SUBTOTAL - (LV.LVN_SUBTOTAL * V.VEN_Descompte) / 100)) as numeric (10, 2)) as LVN_PreuDtoLineaVenta,LV.LVN_SUBTOTAL as LVN_PreuDtoLinea, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA " +
+                                        "from CLIENT c inner join VENDA v on c.TIE_Codigo = v.VEN_CliFactTie and c.CLI_Codi = v.VEN_CliFact " +
+                                        "inner join LIN_VENDA lv on v.VEN_Tienda = lv.VEN_Tienda and v.VEN_Codi = lv.VEN_Codi " +
+                                        "AND v.VEN_NumFactura = '" + txtFactura.Text + "' " +
+                                        "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
+                                        "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
+                                        "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) " +
+                                        "GROUP BY v.VEN_ImportTotal,v.VEN_Codi,v.VEN_Tienda,lv.LVN_Codi,LV.LVN_SUBTOTAL,c.CLI_Codi,c.CLI_Dni, c.CLI_Nom,c.CLI_Cognom1,c.CLI_Cognom2, c.CLI_CodiPostal,C.CLI_NumEdif, C.CLI_Piso,C.CLI_Puerta,C.CLI_Escalera, C.CLI_Domicili, lv.PRD_Item, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_DefAuditiu, c.CLI_EstatCivil ORDER BY LVN_Codi";
+
+
+            sql_recargoEquivalenciaCliente = "SELECT CLI_RecEquivalencia " +
+                                        "from CLIENT c inner join VENDA v on c.TIE_Codigo = v.VEN_CliFactTie and c.CLI_Codi = v.VEN_CliFact WHERE " +
+                                        "v.VEN_NumFactura = '" + txtFactura.Text + "' " +
+                                        "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
+                                        "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
+                                        "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) ";
+            descripcion = "Factura ";
+
+            sql_getVenImportTotal = "SELECT SUM(v.VEN_ImportTotal) FROM VENDA v WHERE v.VEN_NumFactura = '" + txtFactura.Text + "' " +
+                          "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
+                          "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
+                          "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) ";
+
+            ImportTotalString = Conection.SelectOnce(sql_getVenImportTotal).Replace(".", ",");
+
+
+
+            ImporTotalCheck = Convert.ToDecimal(ImportTotalString);
+
+            vendaTable = Conection.SelectRows(sql_getVentas);
+
+            Decimal CLI_Codi = 0;
+
+            if (vendaTable.Rows[0].Field<Decimal>("CLI_Codi").ToString() != null)
+            {
+                //apiRecipient.irsId = vendaTable.Rows[0].Field<string>("TipoDoc").ToString(); //IrsIdType
+                CLI_Codi = vendaTable.Rows[0].Field<Decimal>("CLI_Codi");
+            }
+            else
+            {
+                MessageBox.Show("Error: Falta el País del Cliente");
+                System.Windows.Forms.Application.Exit();
+            }
+
+            //string mensaje = "";
+            //
+            //for (int i = 0; i < vendaTable.Rows.Count; i++)
+            //{
+            //    mensaje += $"--- Fila {i + 1} ---{Environment.NewLine}";
+            //    foreach (DataColumn columna in vendaTable.Columns)
+            //    {
+            //        mensaje += $"{columna.ColumnName}: {vendaTable.Rows[i][columna]}{Environment.NewLine}";
+            //    }
+            //    mensaje += Environment.NewLine;
+            //}
+            //
+            //MessageBox.Show(mensaje, "Todas las filas de vendaTable", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+
+
+            //================DATOS DEL CLIENTE================
+            /*if ((ImporTotalCheck > importe_minimo))
+            {
+                if (CLI_Codi == 0)
+                {
+                    InvoiceArray.type = "F2";
+                    InvoiceArray.simple = true;
+
+                }
+                else
+                {
+                    this.datosCliente();
+                }
+            }
+            else
+            {
+                InvoiceArray.type = "F2";
+                InvoiceArray.simple = true;
+            }
+
+            this.buildJson();*/
+
+            //MessageBox.Show("OK: " + vendaTable, "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+
+
+            return "Factura creada correctamente";
+        }
+
+        public string facturaAbono()
+        {
+            this.sameSQLFacturas();
+            serie = "FA";
+            rectificactiva = "S";//ojo! puede que no lo necesites (seguro)
+            sql_getVentas = "select v.VEN_ImportTotal, v.VEN_Codi, v.VEN_Tienda, lv.LVN_Codi, c.CLI_Codi, c.CLI_Dni, '02' AS Tipo, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_Nom + ' ' + c.CLI_Cognom1 + ' ' + c.CLI_Cognom2 as Nom, c.CLI_DefAuditiu AS Pais, ('0' + c.CLI_EstatCivil) as TipoDoc, c.CLI_CodiPostal," +
+                                       "(case when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Puerta ' + C.CLI_Puerta when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera end) AS Domicili, " +
+                                       "lv.PRD_Item, cast(sum((LV.LVN_SUBTOTAL - (LV.LVN_SUBTOTAL * V.VEN_Descompte) / 100)) as numeric (10, 2)) as LVN_PreuDtoLineaVenta,LV.LVN_SUBTOTAL as LVN_PreuDtoLinea, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA " +
+                                       "from CLIENT c inner join VENDA v on c.TIE_Codigo = v.VEN_CliFactTie and c.CLI_Codi = v.VEN_CliFact " +
+                                       "inner join LIN_VENDA lv on v.VEN_Tienda = lv.VEN_Tienda and v.VEN_Codi = lv.VEN_Codi " +
+                                       "AND v.VEN_NumFactura = '" + txtFactura.Text + "' " +
+                                       "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
+                                       "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
+                                       "AND v.VEN_Referencia = 'ABONO' " +
+                                       "GROUP BY v.VEN_ImportTotal,v.VEN_Codi,v.VEN_Tienda,lv.LVN_Codi,LV.LVN_SUBTOTAL,c.CLI_Codi,c.CLI_Dni, c.CLI_Nom,c.CLI_Cognom1,c.CLI_Cognom2, c.CLI_CodiPostal,C.CLI_NumEdif, C.CLI_Piso,C.CLI_Puerta,C.CLI_Escalera, C.CLI_Domicili, lv.PRD_Item, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_DefAuditiu, c.CLI_EstatCivil ORDER BY LVN_Codi";
+
+            sql_getVenFactAbono = "SELECT VEN_ImportBrut FROM VENDA WHERE VEN_NumFactura = '" + txtFactura.Text + "' " + "AND VEN_Tienda = '" + txtTienda.Text + "' " + "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' " + "AND VEN_Referencia = 'ABONO'";
+
+            id_vendafact = Conection.SelectOnce(sql_getVenFactAbono); //consulta para traer el valor de 'sql_getVenFactAbono'
+
+            subs = id_vendafact.Split(',');
+
+            sql_getFechaVentaAbono = "SELECT TBAI_Codi, V.VEN_DataFactura, V.VEN_NumFactura FROM VENDA V " +
+                                       "INNER JOIN FACTURAS_HACIENDA_AUTO FHA ON (FHA.VEN_NumFactura = V.VEN_NumFactura AND V.VEN_DataFactura = FHA.VEN_DataFactura) WHERE " +
+                                       "V.VEN_Codi = '" + subs[0] + "' " +
+                                       "AND V.VEN_Tienda = '" + subs[1].Substring(0, 2) + "'";
+            ven_abono = Conection.SelectRows(sql_getFechaVentaAbono);
+
+            if (ven_abono == null || ven_abono.Rows.Count == 0)
+            {
+                MessageBox.Show("No puede facturar un Abono de una Venta no facturada (" + subs[0] + "/" + subs[1].Substring(0, 2) + ")");
+                System.Windows.Forms.Application.Exit();
+            }
+
+            date_abo = ven_abono.Rows[0].Field<DateTime>("VEN_DataFactura");
+            date_abo_formated = date_abo.ToString("yyyy-MM-dd");
+            factura_abono_year = date_abo.ToString("yyyy");
+            factura_abono = ven_abono.Rows[0].Field<Int32>("TBAI_Codi").ToString();
+
+
+
+            sql_recargoEquivalenciaCliente = "SELECT CLI_RecEquivalencia " +
+                    "from CLIENT c inner join VENDA v on c.TIE_Codigo = v.VEN_CliFactTie and c.CLI_Codi = v.VEN_CliFact WHERE " +
+                    "v.VEN_NumFactura = '" + txtFactura.Text + "' " +
+                    "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
+                    "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
+                    "AND v.VEN_Referencia = 'ABONO'";
+
+            descripcion = "Factura Abono ";
+
+            sql_getVenImportTotal = "SELECT SUM(v.VEN_ImportTotal) FROM VENDA v WHERE v.VEN_NumFactura = '" + txtFactura.Text + "' " +
+                                             "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
+                                             "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
+                                             "AND v.VEN_Referencia = 'ABONO'";
+
+            ImportTotalString = Conection.SelectOnce(sql_getVenImportTotal).Replace(".", ",");
+
+
+
+            ImporTotalCheck = Convert.ToDecimal(ImportTotalString);
+
+            vendaTable = Conection.SelectRows(sql_getVentas);
+
+            Decimal CLI_Codi = 0;
+
+            if (vendaTable.Rows[0].Field<Decimal>("CLI_Codi").ToString() != null)
+            {
+                //apiRecipient.irsId = vendaTable.Rows[0].Field<string>("TipoDoc").ToString(); //IrsIdType
+                CLI_Codi = vendaTable.Rows[0].Field<Decimal>("CLI_Codi");
+            }
+            else
+            {
+                MessageBox.Show("Error: Falta el País del Cliente");
+                System.Windows.Forms.Application.Exit();
+            }
+
+
+            //================DATOS DEL CLIENTE================
+            /*if ((ImporTotalCheck > importe_minimo))
+            {
+                if (CLI_Codi == 0)
+                {
+                    if (txtReenvio.Text == "R")
+                    {
+                        this.buildCreditNote();
+                    }
+                    else
+                    {
+                        InvoiceArray.type = "F2";
+                    }
+                }
+                else
+                {
+                    if (txtReenvio.Text == "R")
+                    {
+                        this.buildCreditNote(CLI_Codi);
+                    }
+                    else
+                    {
+                        this.datosCliente();
+                    }
+                }
+            }
+            else
+            {
+                InvoiceArray.type = "F2";
+                InvoiceArray.simple = true;
+            }
+
+            this.buildJson();*/
+
+            return "Factura de abono creada correctamente";
+        }
+
+        public string ticket()
+        {
+            this.sameSQLTicket();
+
+            serie = "T";
+            sql_getVentas = "select v.VEN_ImportTotal, v.VEN_Codi, v.VEN_Tienda, lv.LVN_Codi, c.CLI_Dni, '02' AS Tipo, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_Nom + ' ' + c.CLI_Cognom1 + ' ' + c.CLI_Cognom2 as Nom, c.CLI_DefAuditiu AS Pais, ('0' + c.CLI_EstatCivil) as TipoDoc, c.CLI_CodiPostal," +
+                                      "(case when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Puerta ' + C.CLI_Puerta when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera end) AS Domicili, " +
+                                      "lv.PRD_Item, cast(sum((LV.LVN_SUBTOTAL - (LV.LVN_SUBTOTAL * V.VEN_Descompte) / 100)) as numeric (10, 2)) as LVN_PreuDtoLineaVenta,LV.LVN_SUBTOTAL as LVN_PreuDtoLinea, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA " +
+                                      "from CLIENT c inner join VENDA v on c.TIE_Codigo = v.VEN_CliFactTie and c.CLI_Codi = v.VEN_CliFact " +
+                                      "inner join LIN_VENDA lv on v.VEN_Tienda = lv.VEN_Tienda and v.VEN_Codi = lv.VEN_Codi " +
+                                      "AND v.VEN_Ticket = '" + txtFactura.Text + "' " +
+                                      "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
+                                      "AND YEAR(v.VEN_DataTicket) = '" + txtYear.Text + "' " +
+                                      "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) " +
+                                      "GROUP BY v.VEN_ImportTotal,v.VEN_Codi,v.VEN_Tienda,lv.LVN_Codi,LV.LVN_SUBTOTAL,c.CLI_Dni, c.CLI_Nom,c.CLI_Cognom1,c.CLI_Cognom2, c.CLI_CodiPostal,C.CLI_NumEdif, C.CLI_Piso,C.CLI_Puerta,C.CLI_Escalera, C.CLI_Domicili, lv.PRD_Item, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_DefAuditiu, c.CLI_EstatCivil ORDER BY LVN_Codi";
+            factura_a_cliente = "N";
+
+            sql_recargoEquivalenciaCliente = "SELECT CLI_RecEquivalencia " +
+                                       "from CLIENT c inner join VENDA v on c.TIE_Codigo = v.VEN_CliFactTie and c.CLI_Codi = v.VEN_CliFact WHERE " +
+                                       "v.VEN_Ticket = '" + txtFactura.Text + "' " +
+                                       "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
+                                       "AND YEAR(v.VEN_DataTicket) = '" + txtYear.Text + "' " +
+                                       "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) ";
+
+            descripcion = "Ticket ";
+
+            sql_getVenImportTotal = "SELECT SUM(v.VEN_ImportTotal) FROM VENDA v WHERE v.VEN_Ticket = '" + txtFactura.Text + "' " +
+                                            "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
+                                            "AND YEAR(v.VEN_DataTicket) = '" + txtYear.Text + "' " +
+                                            "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) ";
+
+            ImportTotalString = Conection.SelectOnce(sql_getVenImportTotal).Replace(".", ",");
+            ImporTotalCheck = Convert.ToDecimal(ImportTotalString);
+
+            vendaTable = Conection.SelectRows(sql_getVentas);
+
+            /*if (txtReenvio.Text == "R")
+            {
+                this.buildCreditNote();
+            }
+            else
+            {
+                InvoiceArray.type = "F2";
+                InvoiceArray.simple = true;
+            }
+
+            this.buildJson();*/
+
+
+            return "Ticket creado correctamente";
+        }
+
+        public string ticketAbono()
+        {
+            this.sameSQLTicket();
+            serie = "TA";
+            rectificactiva = "S";
+            sql_getVentas = "select v.VEN_ImportTotal, v.VEN_Codi, v.VEN_Tienda, lv.LVN_Codi, c.CLI_Dni, '02' AS Tipo, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_Nom + ' ' + c.CLI_Cognom1 + ' ' + c.CLI_Cognom2 as Nom, c.CLI_DefAuditiu AS Pais, ('0' + c.CLI_EstatCivil) as TipoDoc, c.CLI_CodiPostal," +
+                                      "(case when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Puerta ' + C.CLI_Puerta when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera when C.CLI_NumEdif is not null and C.CLI_Piso is not null and C.CLI_Puerta is not null and C.CLI_Escalera is not null then C.CLI_Domicili + ' Nº ' + C.CLI_NumEdif + ', Piso ' + C.CLI_Piso + ', Pta ' + C.CLI_Puerta + ', Esc. ' + C.CLI_Escalera end) AS Domicili, " +
+                                      "lv.PRD_Item, cast(sum((LV.LVN_SUBTOTAL - (LV.LVN_SUBTOTAL * V.VEN_Descompte) / 100)) as numeric (10, 2)) as LVN_PreuDtoLineaVenta,LV.LVN_SUBTOTAL as LVN_PreuDtoLinea, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA " +
+                                      "from CLIENT c inner join VENDA v on c.TIE_Codigo = v.VEN_CliFactTie and c.CLI_Codi = v.VEN_CliFact " +
+                                      "inner join LIN_VENDA lv on v.VEN_Tienda = lv.VEN_Tienda and v.VEN_Codi = lv.VEN_Codi " +
+                                      "AND v.VEN_Ticket = '" + txtFactura.Text + "' " +
+                                      "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
+                                      "AND YEAR(v.VEN_DataTicket) = '" + txtYear.Text + "' " +
+                                      "AND v.VEN_Referencia = 'ABONO' " +
+                                      "GROUP BY v.VEN_ImportTotal,v.VEN_Codi,v.VEN_Tienda,lv.LVN_Codi,LV.LVN_SUBTOTAL,c.CLI_Dni, c.CLI_Nom,c.CLI_Cognom1,c.CLI_Cognom2, c.CLI_DefAuditiu, c.CLI_CodiPostal,C.CLI_NumEdif, C.CLI_Piso,C.CLI_Puerta,C.CLI_Escalera, C.CLI_Domicili, lv.PRD_Item, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_DefAuditiu, c.CLI_EstatCivil ORDER BY LVN_Codi";
+
+            factura_a_cliente = "N";
+
+            sql_recargoEquivalenciaCliente = "SELECT CLI_RecEquivalencia " +
+                                        "from CLIENT c inner join VENDA v on c.TIE_Codigo = v.VEN_CliFactTie and c.CLI_Codi = v.VEN_CliFact WHERE " +
+                                        "v.VEN_Ticket = '" + txtFactura.Text + "' " +
+                                        "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
+                                        "AND YEAR(v.VEN_DataTicket) = '" + txtYear.Text + "' " +
+                                        "AND v.VEN_Referencia = 'ABONO'";
+
+            descripcion = "Ticket Abono ";
+
+            sql_getVenImportTotal = "SELECT SUM(v.VEN_ImportTotal) FROM VENDA v WHERE v.VEN_Ticket = '" + txtFactura.Text + "' " +
+                                             "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
+                                             "AND YEAR(v.VEN_DataTicket) = '" + txtYear.Text + "' " +
+                                              "AND v.VEN_Referencia = 'ABONO'";
+
+            sql_getVenFactAbono = "SELECT VEN_ImportBrut FROM VENDA WHERE VEN_Ticket = '" + txtFactura.Text + "' " +
+                                       "AND VEN_Tienda = '" + txtTienda.Text + "' " +
+                                       "AND YEAR(VEN_DataTicket) = '" + txtYear.Text + "' " +
+                                       "AND VEN_Referencia = 'ABONO'";
+
+            id_vendafact = Conection.SelectOnce(sql_getVenFactAbono);
+
+            subs = id_vendafact.Split(',');
+
+            sql_getFechaVentaAbono = "SELECT TBAI_Codi, V.VEN_DataTicket, V.VEN_Ticket FROM VENDA V " +
+                               "INNER JOIN FACTURAS_HACIENDA_AUTO FHA ON (FHA.VEN_Ticket = V.VEN_Ticket AND V.VEN_DataTicket = FHA.VEN_DataTicket) WHERE " +
+                               "V.VEN_Codi = '" + subs[0] + "' " +
+                               "AND V.VEN_Tienda = '" + subs[1].Substring(0, 2) + "'";
+
+            ven_abono = Conection.SelectRows(sql_getFechaVentaAbono);
+
+            if (ven_abono == null || ven_abono.Rows.Count == 0)
+            {
+                MessageBox.Show("No puede facturar un Abono de un Ticket no facturado (" + subs[0] + "/" + subs[1].Substring(0, 2) + ")");
+                System.Windows.Forms.Application.Exit();
+            }
+
+            date_abo = ven_abono.Rows[0].Field<DateTime>("VEN_DataTicket");
+
+            date_abo_formated = date_abo.ToString("yyyy-MM-dd");
+
+            factura_abono_year = date_abo.ToString("yyyy");
+
+            factura_abono = ven_abono.Rows[0].Field<Int32>("TBAI_Codi").ToString();
+
+
+
+            vendaTable = Conection.SelectRows(sql_getVentas);
+
+            ImportTotalString = Conection.SelectOnce(sql_getVenImportTotal).Replace(".", ",");
+
+            ImporTotalCheck = Convert.ToDecimal(ImportTotalString);
+
+            /*if (txtReenvio.Text == "R")
+            {
+                this.buildCreditNote();
+            }
+            else
+            {
+                InvoiceArray.type = "F2";
+                InvoiceArray.simple = true;
+            }
+
+            this.buildJson();*/
+
+            return "Ticket abono creado correctamente";
+        }
+
+        public string createImageQr(string qrcode, string ticketbai, string ven_tienda)
+        {
+            string filename;
+            string path = getPathServerImg() + "qr\\";
+
+            var base64Data = Regex.Match(qrcode, @"data:image/(?<type>.+?),(?<data>.+)").Groups["data"].Value;
+            var binData = Convert.FromBase64String(base64Data);
+
+            //long milliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+            string fileName = "QR_" + ticketbai + "_" + ven_tienda + "_" + DateTime.Now.ToString("yyyyMMdd") + ".BMP";
+            filename = Path.Combine(path, fileName);
+
+            if (!File.Exists(filename))
+            {
+                File.WriteAllBytes(filename, binData);
+            }
+
+            return filename;
+        }
+
+        public string deleteState()
+        {
+            // Definir la parte base del SELECT
+            string baseQuery = "SELECT TBAI_Id FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo=";
+
+            // Determinar el FACT_Tipo y la columna de fecha según el tipo de documento
+            string factTipo = "";
+            string fechaColumna = "";
+            string numFacturaColumna = "";
+
+            string texto = txtTipo.Text;
+
+            if (texto.Length > 1)
+            {
+                factTipo = texto.Substring(1); // Ignora el primer carácter y toma el resto
+            }
+
+            if (txtTipo.Text == "SF" || txtTipo.Text == "SFA")
+            {
+                fechaColumna = "VEN_DataFactura";
+                numFacturaColumna = "VEN_NumFactura";
+            }
+            else if (txtTipo.Text == "ST" || txtTipo.Text == "STA")
+            {
+                fechaColumna = "VEN_DataTicket";
+                numFacturaColumna = "VEN_Ticket";
+            }
+
+            // Construcción final de la consulta SQL
+            serie = "D";
+            sql_checkTbaiCodi = $"{baseQuery}'{factTipo}' AND YEAR({fechaColumna}) = '{txtYear.Text}' " +
+                                 $"AND FACT_Tienda = '{txtTienda.Text}' AND {numFacturaColumna} = '{txtFactura.Text}'";
+
+
+            return "Eliminado correctamente";
         }
 
 

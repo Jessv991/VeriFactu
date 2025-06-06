@@ -16,29 +16,34 @@ namespace VeriFactu
             ApplicationConfiguration.Initialize();
 
             string tienda = args[1];
-            string sql = $"SELECT PAR_Valor FROM \"indo\".\"TIENDADATOS\" WHERE TIE_Codigo = '{tienda}' AND PAR_Key = 'TicketBai_Tipo';";
+            string sql = $"SELECT PAR_Valor FROM TIENDADATOS WHERE TIE_Codigo = '{tienda}' AND PAR_Key = 'TicketBai_Tipo';";
 
-            string TicketBai_Tipo = Conection.SelectOnce(sql);
+            string TicketBai_Tipo = Conection.SelectOnce(sql).ToUpper();
 
 
-            if (TicketBai_Tipo == "VeriFactu") {
+            if (TicketBai_Tipo == "VERIFACTU") {
 
-                Inicio form = new Inicio();
-                if (args.Length >= 4)
+                VeriFactu form = new VeriFactu();
+
+                if (args.Length >= 3)
                 {
                     form.getVEN_Tipo(args[0]);
                     form.getVEN_Tienda(args[1]);
                     form.getVEN_Numfactura(args[2]);
-                    form.getVEN_Year(args[3]);
 
-                    if (args.Length >= 5)
+                    if (args.Length >= 4)
                     {
-                        form.getReenvio(args[4]);
+                        form.getVEN_Year(args[3]);
+
+                        if (args.Length >= 5)
+                        {
+                            form.getReenvio(args[4]);
+                        }
                     }
                 }
                 Application.Run(form);
             }
-            else if (TicketBai_Tipo == "TicketBai")
+            else if (TicketBai_Tipo == "TICKETBAI")
             {
                 TicketBai form = new TicketBai();
 

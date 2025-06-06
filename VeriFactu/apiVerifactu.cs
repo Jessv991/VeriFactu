@@ -80,7 +80,7 @@ namespace VeriFactu
         public class CreditNote//(CreditNoteType) este es el array que va despues de type que tiene los datos rectificativos
         {
             public string style { get; set; }//EL STYLE ES 'S' O 'I'
-            public InvoiceId ids { get; set; }
+            public List<InvoiceId> ids { get; set; }
         }
         
         public class InvoiceId//(InvoiceIdJson) este es el array que va dentro de ids de (CreditNoteType)
@@ -100,6 +100,7 @@ namespace VeriFactu
             public string verifactuUrl { get; set; }
             public string queueId { get; set; }
             public string message { get; set; }
+            public string state { get; set; }
         }
 
         public class chainInfo

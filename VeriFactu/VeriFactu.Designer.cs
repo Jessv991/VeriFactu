@@ -1,6 +1,6 @@
 ﻿namespace VeriFactu
 {
-    partial class Inicio
+    partial class VeriFactu
     {
         /// <summary>
         ///  Required designer variable.
@@ -152,10 +152,11 @@
             pictureBox1.Location = new Point(657, 74);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(141, 124);
+            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureBox1.TabIndex = 12;
             pictureBox1.TabStop = false;
             // 
-            // Inicio
+            // VeriFactu
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -173,7 +174,7 @@
             Controls.Add(txtYear);
             Controls.Add(txtFactura);
             Controls.Add(txtTipo);
-            Name = "Inicio";
+            Name = "VeriFactu";
             Text = "Form1";
             Load += Inicio_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
