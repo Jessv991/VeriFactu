@@ -119,8 +119,8 @@ namespace VeriFactu
         private void Inicio_Load(object sender, EventArgs e)
         {
 
-            string mensaje = $"Tipo: {txtTipo.Text}\nFactura: {txtFactura.Text}\nTienda: {txtTienda.Text}\nAño: {txtYear.Text}";
-            MessageBox.Show(mensaje, "Datos de Factura");
+            //string mensaje = $"Tipo: {txtTipo.Text}\nFactura: {txtFactura.Text}\nTienda: {txtTienda.Text}\nAño: {txtYear.Text}";
+            //MessageBox.Show(mensaje, "Datos de Factura");
 
             //client.Timeout = -1;
             date_formated = date.ToString("yyyy-MM-dd");
@@ -186,11 +186,11 @@ namespace VeriFactu
             else if (txtTipo.Text[0] == 'D' || txtTipo.Text[0] == 'S')//cogemos la pprimera letra para identificar que tiene 'D' y as� saber que es delete, una vez hecho eso en la funci�n identifico el tipo de delete
             {
                 respuesta = this.deleteOrState();
-                MessageBox.Show("OK: " + respuesta, "�xito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                System.Windows.Forms.Application.Exit();
             }
             else
             {
-                MessageBox.Show("Error: El tipo de factura es incorrecto.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Error: El tipo de factura o ticket es incorrecto.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
 
@@ -274,22 +274,6 @@ namespace VeriFactu
                           "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
                           "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) ";
 
-            //string mensaje = "";
-            //
-            //for (int i = 0; i < vendaTable.Rows.Count; i++)
-            //{
-            //    mensaje += $"--- Fila {i + 1} ---{Environment.NewLine}";
-            //    foreach (DataColumn columna in vendaTable.Columns)
-            //    {
-            //        mensaje += $"{columna.ColumnName}: {vendaTable.Rows[i][columna]}{Environment.NewLine}";
-            //    }
-            //    mensaje += Environment.NewLine;
-            //}
-            //
-            //MessageBox.Show(mensaje, "Todas las filas de vendaTable", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-
-
             //================DATOS DEL CLIENTE================
 
             string msj = "Factura creada correctamente";
@@ -307,31 +291,9 @@ namespace VeriFactu
 
                 vendaTable = Conection.SelectRows(sql_getVentas);
 
-                Decimal CLI_Codi = 0;
-
-                if (vendaTable.Rows[0].Field<Decimal>("CLI_Codi").ToString() != null)
-                {
-                    //apiRecipient.irsId = vendaTable.Rows[0].Field<string>("TipoDoc").ToString(); //IrsIdType
-                    CLI_Codi = vendaTable.Rows[0].Field<Decimal>("CLI_Codi");
-                }
-                else
-                {
-                    MessageBox.Show("Error: Falta el Pa�s del Cliente");
-                    System.Windows.Forms.Application.Exit();
-                }
-
                 if ((ImporTotalCheck > importe_minimo))
                 {
-                    if (CLI_Codi == 0)
-                    {
-                        InvoiceArray.type = "F2";
-                        InvoiceArray.simple = true;
-
-                    }
-                    else
-                    {
-                        this.datosCliente();
-                    }
+                    this.datosCliente();
                 }
                 else
                 {
@@ -423,38 +385,18 @@ namespace VeriFactu
 
                 vendaTable = Conection.SelectRows(sql_getVentas);
 
-                Decimal CLI_Codi = 0;
-
-                if (vendaTable.Rows[0].Field<Decimal>("CLI_Codi").ToString() != null)
-                {
-                    //apiRecipient.irsId = vendaTable.Rows[0].Field<string>("TipoDoc").ToString(); //IrsIdType
-                    CLI_Codi = vendaTable.Rows[0].Field<Decimal>("CLI_Codi");
-                }
-                else
-                {
-                    MessageBox.Show("Error: Falta el Pa�s del Cliente");
-                    System.Windows.Forms.Application.Exit();
-                }
-
-
                 //================DATOS DEL CLIENTE================
                 if ((ImporTotalCheck > importe_minimo))
                 {
-                    if (CLI_Codi == 0)
-                    {
-                        this.buildCreditNote();
-                    }
-                    else
-                    {
-                        this.buildCreditNote(CLI_Codi);
-                        this.datosCliente();
-
-                    }
+                    InvoiceArray.type = "R1";
+                    this.buildCreditNote();
+                    this.datosCliente();
                 }
                 else
                 {
+                    InvoiceArray.type = "R5";
+                    InvoiceArray.simple = true;
                     this.buildCreditNote();
-
                 }
 
                 this.buildJson();
@@ -601,6 +543,8 @@ namespace VeriFactu
                 ImportTotalString = Conection.SelectOnce(sql_getVenImportTotal).Replace(".", ",");
 
                 ImporTotalCheck = Convert.ToDecimal(ImportTotalString);
+                InvoiceArray.type = "R5";
+                InvoiceArray.simple = true;
                 this.buildCreditNote();
                 this.buildJson();
             }
@@ -800,7 +744,6 @@ namespace VeriFactu
             //=====================VATLINE (VatLine de factura)
 
             //vatLineArray.@base = 0;
-            InvoiceArray.vatLines = new List<VatLine>();
 
             foreach (DataRow row in vendaTable.Rows)
             {
@@ -838,6 +781,8 @@ namespace VeriFactu
 
             Decimal total = 0;
             Decimal totalAmount = 0;
+
+            InvoiceArray.vatLines = new List<VatLine>();
 
             if ((total_neto_21 > 0) || (total_neto_21 < 0))
             {
@@ -984,7 +929,7 @@ namespace VeriFactu
 
             txtJson.Text = JSONresult;
 
-            WriteLog(textBox1.Text, path_server, txtTipo.Text, txtFactura.Text, txtTienda.Text, txtYear.Text);
+            WriteLog(txtJson.Text, path_server, txtTipo.Text, txtFactura.Text, txtTienda.Text, txtYear.Text);
 
             request.AddHeader("Content-Type", "application/json; charset=utf-8");
             request.AddHeader("Accept", "application/json");
@@ -1081,7 +1026,7 @@ namespace VeriFactu
                     }
                 }
                 
-                MessageBox.Show("Factura creada");
+                //MessageBox.Show("Factura creada");
 
                 //System.Windows.Forms.Application.Exit();
 
@@ -1090,7 +1035,6 @@ namespace VeriFactu
             {
                 using (System.Data.Odbc.OdbcCommand cmd = new System.Data.Odbc.OdbcCommand())
                 {
-                    MessageBox.Show("Error: " + new_factura.message);
                     WriteLog("Error: " + new_factura.message, path_server, txtTipo.Text, txtFactura.Text, txtTienda.Text, txtYear.Text);
                     cmd.CommandText = sql_updateFactura_KO;
                     System.Data.Odbc.OdbcParameter paramTBAI_Mensaje = new System.Data.Odbc.OdbcParameter();
@@ -1098,10 +1042,11 @@ namespace VeriFactu
                     paramTBAI_Mensaje.Value = new_factura.message;
                     cmd.Parameters.Add(paramTBAI_Mensaje);
                     Conection.ExecuteCommand(cmd);
+                    MessageBox.Show("Error: " + new_factura.message);
                 }
             }
             //MessageBox.Show("Factura creada");
-            //System.Windows.Forms.Application.Exit();
+            System.Windows.Forms.Application.Exit();
         }
 
 
@@ -1125,21 +1070,9 @@ namespace VeriFactu
             return filename;
         }
 
-        public void buildCreditNote(Decimal CLI_Codi = 0)
+        public void buildCreditNote()
         {
             CreditNoteArray.ids = new List<InvoiceId>();
-
-            if (CLI_Codi == 0)
-            {
-                InvoiceArray.type = "R5";
-                InvoiceArray.simple = true;
-            }
-            else
-            {
-                InvoiceArray.type = "R1";
-            }
-
-
             CreditNoteArray.style = "I";//OJO hacer un array de apiCreditNote ***********
             //InvoiceIdArray.serie = serie.Substring(0, 1) + "/" + txtTienda.Text + "/" + factura_abono_year;
             InvoiceIdArray.number = factura_abono;
@@ -1152,8 +1085,9 @@ namespace VeriFactu
 
         public string deleteOrState()
         {
-            string sql_tipoForT= "SELECT FACT_Tipo FROM FACTURAS_HACIENDA_AUTO WHERE TBAI_Queue = '" + txtFactura.Text + "'";
+            string sql_tipoForT= "SELECT TBAI_Id FROM FACTURAS_HACIENDA_AUTO WHERE TBAI_Queue = '" + txtFactura.Text + "'";
             string tipoForT= Conection.SelectOnce(sql_tipoForT);
+            string msjReturn = "";
 
             var client = new RestClient(new RestClientOptions(TicketBai_DB.Trim())
             {
@@ -1164,32 +1098,26 @@ namespace VeriFactu
 
             if (txtTipo.Text == "S")
             {
-                sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Estado =? WHERE TBAI_Queue = '" + txtFactura.Text + "' AND FACT_Tiend = '" + txtTienda.Text + "'";
+                sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Estado =? WHERE TBAI_Queue = '" + txtFactura.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
+                sql_updateFactura_KO = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Mensaje = ? WHERE TBAI_Queue = '" + txtFactura.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
                 request = new RestRequest("verifactu/v1/invoice_state/" + txtFactura.Text, Method.Post);
+                msjReturn = "Estado actualizado correctamente";
             }
             else if (txtTipo.Text == "D")
             {
-                if (tipoForT == "F")
-                {
-                    sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Codi = ?, TBAI_UserId=?, TBAI_Data = ?, TBAI_Id = ?, TBAI_Hash  = ?, TBAI_Xml = ?, TBAI_Queue = ?, TBAI_Estado=?, TBAI_mensaje = ? WHERE " +
-                                        "VEN_NumFactura = '" + txtFactura.Text + "' " +
-                                        "AND FACT_Tienda = '" + txtTienda.Text + "' " +
-                                        "AND FACT_Tipo = 'F' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
+                sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_UserId=?, TBAI_Data = ?, TBAI_Hash  = ?, TBAI_Xml = ?, TBAI_Queue = ?, TBAI_Estado=?, TBAI_mensaje = ? WHERE " +
+                                        "TBAI_Id = '" + tipoForT + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND TBAI_Queue IS NULL";
+                sql_updateFactura_KO = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Mensaje = ? WHERE TBAI_Id = '" + tipoForT + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND TBAI_Queue IS NULL";
 
-                }
-                else if (tipoForT == "T")
-                {
-                    sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_UserId=?, TBAI_Data = ?, TBAI_Id = ?, TBAI_Hash  = ?, TBAI_Xml = ?, TBAI_Queue = ?, TBAI_Estado=?, TBAI_mensaje = ? WHERE " +
-                                        "VEN_Ticket = '" + txtFactura.Text + "' " +
-                                        "AND FACT_Tienda = '" + txtTienda.Text + "' " +
-                                        "AND FACT_Tipo = 'T' AND YEAR(VEN_DataTicket) = '" + txtYear.Text + "'";
-                }
                 request = new RestRequest("verifactu/v1/invoice_cancel", Method.Post);
                 request.AddStringBody(txtFactura.Text, DataFormat.Json);
+                msjReturn = "Cancelada correctamente";
             }
 
 
+            txtJson.Text = sql_updateFactura;
 
+            WriteLog(txtJson.Text, path_server, txtTipo.Text, txtFactura.Text, txtTienda.Text, txtYear.Text);
 
             request.AddHeader("Content-Type", "application/json; charset=utf-8");
             request.AddHeader("Accept", "application/json");
@@ -1207,7 +1135,7 @@ namespace VeriFactu
 
             
 
-            if ((new_factura.message == "") || (new_factura.message is null))
+            if ((new_factura.message == "") || (new_factura.message is null) || (tipoForT == new_factura.chainInfo.number))
             {
 
 
@@ -1237,10 +1165,6 @@ namespace VeriFactu
                         paramTBAI_Data.OdbcType = System.Data.Odbc.OdbcType.Date;
                         paramTBAI_Data.Value = issuedTime;
                         cmd.Parameters.Add(paramTBAI_Data);
-                        System.Data.Odbc.OdbcParameter paramTBAI_Id = new System.Data.Odbc.OdbcParameter();
-                        paramTBAI_Id.OdbcType = System.Data.Odbc.OdbcType.Text;
-                        paramTBAI_Id.Value = new_factura.chainInfo.number;
-                        cmd.Parameters.Add(paramTBAI_Id);
                         System.Data.Odbc.OdbcParameter paramTBAI_Hash = new System.Data.Odbc.OdbcParameter();
                         paramTBAI_Hash.OdbcType = System.Data.Odbc.OdbcType.Text;
                         paramTBAI_Hash.Value = new_factura.chainInfo.hash;
@@ -1255,8 +1179,12 @@ namespace VeriFactu
                         cmd.Parameters.Add(paramTBAI_Queue);
                         System.Data.Odbc.OdbcParameter paramTBAI_Estado = new System.Data.Odbc.OdbcParameter();
                         paramTBAI_Estado.OdbcType = System.Data.Odbc.OdbcType.Text;
-                        paramTBAI_Estado.Value = "Factura Cancelada";
+                        paramTBAI_Estado.Value = "Cancelada";
                         cmd.Parameters.Add(paramTBAI_Estado);
+                        System.Data.Odbc.OdbcParameter paramTBAI_Mensaje = new System.Data.Odbc.OdbcParameter();
+                        paramTBAI_Mensaje.OdbcType = System.Data.Odbc.OdbcType.Text;
+                        paramTBAI_Mensaje.Value = new_factura.message;
+                        cmd.Parameters.Add(paramTBAI_Mensaje);
                     }
 
                     Conection.ExecuteCommand(cmd);
@@ -1270,7 +1198,7 @@ namespace VeriFactu
             {
                 using (System.Data.Odbc.OdbcCommand cmd = new System.Data.Odbc.OdbcCommand())
                 {
-                    MessageBox.Show("Error: " + new_factura.message);
+                    //MessageBox.Show("Error: " + new_factura.message);
                     WriteLog("Error: " + new_factura.message, path_server, txtTipo.Text, txtFactura.Text, txtTienda.Text, txtYear.Text);
                     cmd.CommandText = sql_updateFactura_KO;
                     System.Data.Odbc.OdbcParameter paramTBAI_Mensaje = new System.Data.Odbc.OdbcParameter();
@@ -1278,13 +1206,13 @@ namespace VeriFactu
                     paramTBAI_Mensaje.Value = new_factura.message;
                     cmd.Parameters.Add(paramTBAI_Mensaje);
                     Conection.ExecuteCommand(cmd);
+
+                    msjReturn = "Error: " + new_factura.message;
                 }
             }
-            //System.Windows.Forms.Application.Exit();
+            System.Windows.Forms.Application.Exit();
 
-
-
-            return "Eliminado correctamente";
+            return msjReturn;
         }
 
 

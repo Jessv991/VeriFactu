@@ -47,16 +47,20 @@ namespace VeriFactu
             {
                 TicketBai form = new TicketBai();
 
-                if (args.Length >= 4)
+                if (args.Length >= 3)
                 {
                     form.getVEN_Tipo(args[0]);
                     form.getVEN_Tienda(args[1]);
                     form.getVEN_Numfactura(args[2]);
-                    form.getVEN_Year(args[3]);
 
-                    if (args.Length >= 5)
+                    if (args.Length >= 4)
                     {
-                        form.getReenvio(args[4]);
+                        form.getVEN_Year(args[3]);
+
+                        if (args.Length >= 5)
+                        {
+                            form.getReenvio(args[4]);
+                        }
                     }
                 }
                 Application.Run(form);
