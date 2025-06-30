@@ -210,6 +210,7 @@ namespace VeriFactu
             }
 
             return resultado;
+        
         }
 
         /*string parametrosInfo = "SQL: " + cmd.CommandText + "\n\nParámetros:\n";
