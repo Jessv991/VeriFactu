@@ -64,6 +64,9 @@ namespace VeriFactu
                     }
                 }
                 Application.Run(form);
+            }else
+            {
+                MessageBox.Show("Necesitan indicar el TicketBai_Tipo", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
 
 

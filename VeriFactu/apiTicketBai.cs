@@ -82,6 +82,7 @@ namespace VeriFactu
 
         public class Invoice
         {
+            public Issuer issuer { get; set; }
             public Invoice_id id;
             public CreditNote creditNote;
             public Description description;
@@ -93,6 +94,13 @@ namespace VeriFactu
 
             public string[] vatKeys = new string[1];
         }
+
+        public class Issuer//datos del emisor de la factura
+        {
+            public string irsId { get; set; }
+            public string name { get; set; }
+        }
+
         public class Lines
         {
             public ArrayList lines { get; set; }

@@ -79,6 +79,7 @@ namespace VeriFactu
         static apiTicketBai.CreditNote CreditNoteArray = new apiTicketBai.CreditNote();
         static apiTicketBai.CreditNote_ids CreditNote_idsArray = new apiTicketBai.CreditNote_ids();
         static apiTicketBai.Description descriptionArray = new apiTicketBai.Description();
+        static apiTicketBai.Issuer IssuerArray = new apiTicketBai.Issuer();
         static apiTicketBai.Line lineArray = new apiTicketBai.Line();
         static apiTicketBai.VatLine vatLineArray = new apiTicketBai.VatLine();
 
@@ -154,27 +155,25 @@ namespace VeriFactu
 
             if (txtTipo.Text == "F")
             {
-                respuesta = this.factura(1);
-                MessageBox.Show("OK: " + respuesta, "�xito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.factura(1);
+               
             }
             else if (txtTipo.Text == "FA")
             {
-                respuesta = this.facturaAbono();
-                MessageBox.Show("OK: " + respuesta, "�xito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.facturaAbono();
+                
             }
             else if (txtTipo.Text == "T")
             {
-                respuesta = this.ticket();
-                MessageBox.Show("OK: " + respuesta, "�xito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.ticket();
             }
             else if (txtTipo.Text == "TA")
             {
-                respuesta = this.ticketAbono();
-                MessageBox.Show("OK: " + respuesta, "�xito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.ticketAbono();
             }
-            else if (txtTipo.Text[0] == 'D' || txtTipo.Text[0] == 'S')//cogemos la pprimera letra para identificar que tiene 'D' y as� saber que es delete, una vez hecho eso en la funci�n identifico el tipo de delete
+            else if (txtTipo.Text[0] == 'D' || txtTipo.Text[0] == 'S')
             {
-                respuesta = this.deleteOrState();
+                this.deleteOrState();
                 System.Windows.Forms.Application.Exit();
             }
             else
@@ -230,7 +229,7 @@ namespace VeriFactu
 
         }
 
-        public string factura(int codigo)
+        public void factura(int codigo)
         {
             this.sameSQLFacturas();
 
@@ -263,7 +262,6 @@ namespace VeriFactu
 
             //================DATOS DEL CLIENTE================
 
-            string msj = "Factura creada correctamente";
 
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
 
@@ -288,20 +286,21 @@ namespace VeriFactu
                 }
 
                 this.buildJson();
+                //MessageBox.Show("Factura creada correctamente");
+                System.Windows.Forms.Application.Exit();
             }
             else
             {
-                msj = "No se puede crear factura duplicada";
+
+                //MessageBox.Show("No se puede crear factura duplicada");
+                System.Windows.Forms.Application.Exit();
             }
-
-
-            return msj;
 
 
 
         }
 
-        public string facturaAbono()
+        public void facturaAbono()
         {
             this.sameSQLFacturas();
             serie = "FA";
@@ -356,7 +355,6 @@ namespace VeriFactu
                                              "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
                                              "AND v.VEN_Referencia = 'ABONO'";
 
-            string msj = "Factura creada correctamente";
 
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
 
@@ -370,19 +368,6 @@ namespace VeriFactu
                 ImporTotalCheck = Convert.ToDecimal(ImportTotalString);
 
                 vendaTable = Conection.SelectRows(sql_getVentas);
-
-                Decimal CLI_Codi = 0;
-
-                if (vendaTable.Rows[0].Field<Decimal>("CLI_Codi").ToString() != null)
-                {
-                    //apiRecipient.irsId = vendaTable.Rows[0].Field<string>("TipoDoc").ToString(); //IrsIdType
-                    CLI_Codi = vendaTable.Rows[0].Field<Decimal>("CLI_Codi");
-                }
-                else
-                {
-                    MessageBox.Show("Error: Falta el Pa�s del Cliente");
-                    System.Windows.Forms.Application.Exit();
-                }
 
 
                 //================DATOS DEL CLIENTE================
@@ -399,16 +384,17 @@ namespace VeriFactu
 
                 this.buildCreditNote();
                 this.buildJson();
+                //MessageBox.Show("Factura Abono creada correctamente");
+                System.Windows.Forms.Application.Exit();
             }
             else
             {
-                msj = "No se puede crear factura duplicada";
+                //MessageBox.Show("No se puede crear factura Abono duplicada");
+                System.Windows.Forms.Application.Exit();
             }
-
-            return msj;
         }
 
-        public string ticket()
+        public void ticket()
         {
             this.sameSQLTicket();
 
@@ -439,7 +425,6 @@ namespace VeriFactu
                                             "AND YEAR(v.VEN_DataTicket) = '" + txtYear.Text + "' " +
                                             "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) ";
 
-            string msj = "Ticket creado correctamente";
 
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
 
@@ -453,16 +438,17 @@ namespace VeriFactu
                 InvoiceArray.simple = true;
 
                 this.buildJson();
+                //MessageBox.Show("Ticket creado correctamente");
+                System.Windows.Forms.Application.Exit();
             }
             else
             {
-                msj = "No se puede enviar un ticket duplicado";
+                //MessageBox.Show("No se puede crear Ticket duplicado");
+                System.Windows.Forms.Application.Exit();
             }
-
-            return msj;
         }
 
-        public string ticketAbono()
+        public void ticketAbono()
         {
             this.sameSQLTicket();
             serie = "TA";
@@ -502,7 +488,6 @@ namespace VeriFactu
 
 
 
-            string msj = "Ticket creado correctamente";
 
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
 
@@ -545,13 +530,14 @@ namespace VeriFactu
                 CreditNoteArray.reason = "R5";
                 this.buildCreditNote();
                 this.buildJson();
+                //MessageBox.Show("Ticket Abono creado correctamente");
+                System.Windows.Forms.Application.Exit();
             }
             else
             {
-                msj = "No se puede enviar un ticket duplicado";
+                //MessageBox.Show("No se puede crear Ticket Abono duplicado");
+                System.Windows.Forms.Application.Exit();
             }
-
-            return msj;
 
         }
 
@@ -561,11 +547,8 @@ namespace VeriFactu
 
             //=====================numero de TIPO DE DOCUMENTO (irsId)
 
-            string tipo = "";
-
-            if (vendaTable.Rows[0].Field<string>("TipoDoc").ToString() != null)
+            /*if (vendaTable.Rows[0].Field<string>("TipoDoc").ToString() != null)
             {
-                //apiRecipient.irsId = vendaTable.Rows[0].Field<string>("TipoDoc").ToString(); //IrsIdType
                 if (vendaTable.Rows[0].Field<string>("Pais") != null)
                 {
                     if (vendaTable.Rows[0].Field<string>("TipoDoc").ToString() != "02") //IrsIdType
@@ -576,7 +559,7 @@ namespace VeriFactu
                 }
                 else
                 {
-                    MessageBox.Show("Error: Falta tipo de documento de identidad");
+                    MessageBox.Show("Error: Falta Pais del cliente");
                     System.Windows.Forms.Application.Exit();
                 }
             }
@@ -584,7 +567,7 @@ namespace VeriFactu
             {
                 MessageBox.Show("Error: Falta tipo de documento de identidad");
                 System.Windows.Forms.Application.Exit();
-            }
+            }*/
 
             if (vendaTable.Rows[0].Field<string>("CLI_Dni") != null)
             {
@@ -595,20 +578,29 @@ namespace VeriFactu
                 char[] charsToTrim = { '*', ' ', '\'' };
                 dni = dni.Trim(charsToTrim);
 
-                if (vendaTable.Rows[0].Field<string>("Pais") != null)
+                if (vendaTable.Rows[0].Field<string>("TipoDoc") != null)
                 {
-                    if (vendaTable.Rows[0].Field<string>("TipoDoc").ToString() == "02")//IrsIdType
+                    if (vendaTable.Rows[0].Field<string>("Pais") != null)
                     {
-                        recipientArray.irsId = dni;
+                        if (vendaTable.Rows[0].Field<string>("TipoDoc").ToString() == "02")//IrsIdType
+                        {
+                            recipientArray.irsId = dni;
+                        }
+                        else
+                        {
+                            recipientArray.id = dni;
+                            recipientArray.idType = vendaTable.Rows[0].Field<string>("TipoDoc").ToString(); //IrsIdType
+                        }
                     }
                     else
                     {
-                        recipientArray.id = dni;
+                        MessageBox.Show("Error: Falta Pais del cliente");
+                        System.Windows.Forms.Application.Exit();
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Error: Falta DNI del cliente");
+                    MessageBox.Show("Error: Falta Tipo de documento de identidad");
                     System.Windows.Forms.Application.Exit();
                 }
             }
@@ -682,6 +674,32 @@ namespace VeriFactu
             });
 
             var request = new RestRequest("ticketbai_api/v1/invoice", Method.Post);
+
+            //=====================ISSURE=====================
+
+            datosIssureTiendaTable = Conection.SelectRows(sql_datosIssureTienda);
+
+            if (datosIssureTiendaTable.Rows[0].Field<string>("RegMercantil").ToString() != null)
+            {
+                IssuerArray.name = datosIssureTiendaTable.Rows[0].Field<string>("RegMercantil").ToString();
+            }
+            else
+            {
+                MessageBox.Show("Error: Falta el Registro Mercantil de la optica del Cliente");
+                System.Windows.Forms.Application.Exit();
+            }
+
+            if (datosIssureTiendaTable.Rows[0].Field<string>("NIF").ToString() != null)
+            {
+                IssuerArray.irsId = datosIssureTiendaTable.Rows[0].Field<string>("NIF").ToString();
+            }
+            else
+            {
+                MessageBox.Show("Error: Falta el NIF de la optica del Cliente");
+                System.Windows.Forms.Application.Exit();
+            }
+
+            InvoiceArray.issuer = IssuerArray; //AGREGAMOS ISSURE A INVOICE
 
             if (txtTipo.Text == "F" || txtTipo.Text == "FA")
             {
@@ -1197,7 +1215,7 @@ namespace VeriFactu
                     msjReturn = "Error: " + new_factura.message;
                 }
             }
-            System.Windows.Forms.Application.Exit();
+            //System.Windows.Forms.Application.Exit();
 
 
 

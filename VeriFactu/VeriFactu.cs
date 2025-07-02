@@ -122,9 +122,7 @@ namespace VeriFactu
             //string mensaje = $"Tipo: {txtTipo.Text}\nFactura: {txtFactura.Text}\nTienda: {txtTienda.Text}\nAño: {txtYear.Text}";
             //MessageBox.Show(mensaje, "Datos de Factura");
 
-            //client.Timeout = -1;
             date_formated = date.ToString("yyyy-MM-dd");
-            //conection.openConection();
 
             sql_getListaParametros = "SELECT PAR_Valor FROM TIENDADATOS WHERE TIE_Codigo = " + txtTienda.Text + " AND PAR_Key = 'TicketBai_DB'";
             TicketBai_DB = Conection.SelectOnce(sql_getListaParametros); //consulta para optiner 'TicketBai_DB'
@@ -152,9 +150,7 @@ namespace VeriFactu
 
             //=====================CONSULTA PARA OBTENER ISSURE=======================================
 
-            sql_datosIssureTienda = "SELECT (SELECT PAR_Valor FROM indo.TIENDADATOS WHERE PAR_Key = 'NIF' AND TIE_Codigo = " + txtTienda.Text + ") AS NIF, (SELECT PAR_Valor FROM indo.TIENDADATOS WHERE PAR_Key = 'RegMercantil' AND TIE_Codigo = " + txtTienda.Text + ") AS RegMercantil;";
-
-            //recargo_equivalencia_cliente = Conection.SelectOnce(sql_recargoEquivalenciaCliente); //consulta para optiner 'recargo_equivalencia_empresa'
+            sql_datosIssureTienda = "SELECT (SELECT PAR_Valor FROM TIENDADATOS WHERE PAR_Key = 'NIF' AND TIE_Codigo = " + txtTienda.Text + ") AS NIF, (SELECT PAR_Valor FROM indo.TIENDADATOS WHERE PAR_Key = 'RegMercantil' AND TIE_Codigo = " + txtTienda.Text + ") AS RegMercantil;";
 
             //=========================importe minimo para pasar datos del cliente=========================
 
@@ -165,27 +161,23 @@ namespace VeriFactu
 
             if (txtTipo.Text == "F")
             {
-                respuesta = this.factura(1);
-                MessageBox.Show("OK: " + respuesta, "�xito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.factura();
             }
             else if (txtTipo.Text == "FA")
             {
-                respuesta = this.facturaAbono();
-                MessageBox.Show("OK: " + respuesta, "�xito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.facturaAbono();
             }
             else if (txtTipo.Text == "T")
             {
-                respuesta = this.ticket();
-                MessageBox.Show("OK: " + respuesta, "�xito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.ticket();
             }
             else if (txtTipo.Text == "TA")
             {
-                respuesta = this.ticketAbono();
-                MessageBox.Show("OK: " + respuesta, "�xito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                this.ticketAbono();
             }
-            else if (txtTipo.Text[0] == 'D' || txtTipo.Text[0] == 'S')//cogemos la pprimera letra para identificar que tiene 'D' y as� saber que es delete, una vez hecho eso en la funci�n identifico el tipo de delete
+            else if (txtTipo.Text[0] == 'D' || txtTipo.Text[0] == 'S')
             {
-                respuesta = this.deleteOrState();
+                this.deleteOrState();
                 System.Windows.Forms.Application.Exit();
             }
             else
@@ -243,7 +235,7 @@ namespace VeriFactu
 
         }
 
-        public string factura(int codigo)
+        public void factura()
         {
             this.sameSQLFacturas();
 
@@ -276,8 +268,6 @@ namespace VeriFactu
 
             //================DATOS DEL CLIENTE================
 
-            string msj = "Factura creada correctamente";
-
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
 
             if (string.IsNullOrEmpty(checkIfExist) || txtReenvio.Text == "R")
@@ -302,20 +292,21 @@ namespace VeriFactu
                 }
 
                 this.buildJson();
+                //MessageBox.Show("Factura creada correctamente");
+                System.Windows.Forms.Application.Exit();
             }
-            else 
+            else
             {
-                msj = "No se puede crear factura duplicada";
+
+                //MessageBox.Show("No se puede crear factura duplicada");
+                System.Windows.Forms.Application.Exit();
             }
-
-
-            return msj;
 
 
 
         }
 
-        public string facturaAbono()
+        public void facturaAbono()
         {
             this.sameSQLFacturas();
             serie = "FA";
@@ -370,8 +361,6 @@ namespace VeriFactu
                                              "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
                                              "AND v.VEN_Referencia = 'ABONO'";
 
-            string msj = "Factura creada correctamente";
-
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
 
             if (string.IsNullOrEmpty(checkIfExist) || txtReenvio.Text == "R")
@@ -400,16 +389,17 @@ namespace VeriFactu
                 }
 
                 this.buildJson();
+                //MessageBox.Show("Factura Abono creada correctamente");
+                System.Windows.Forms.Application.Exit();
             }
-            else 
+            else
             {
-                msj = "No se puede crear factura duplicada";
+                //MessageBox.Show("No se puede crear factura Abono duplicada");
+                System.Windows.Forms.Application.Exit();
             }
-
-            return msj;
         }
 
-        public string ticket()
+        public void ticket()
         {
             this.sameSQLTicket();
 
@@ -440,8 +430,6 @@ namespace VeriFactu
                                             "AND YEAR(v.VEN_DataTicket) = '" + txtYear.Text + "' " +
                                             "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) ";
 
-            string msj = "Ticket creado correctamente";
-
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
 
             if (string.IsNullOrEmpty(checkIfExist) || txtReenvio.Text == "R")
@@ -456,16 +444,17 @@ namespace VeriFactu
                 InvoiceArray.simple = true;
 
                 this.buildJson();
+                //MessageBox.Show("Ticket creado correctamente");
+                System.Windows.Forms.Application.Exit();
             }
             else
             {
-                msj = "No se puede enviar un ticket duplicado";
+                //MessageBox.Show("No se puede crear Ticket duplicado");
+                System.Windows.Forms.Application.Exit();
             }
-
-            return msj;
         }
 
-        public string ticketAbono()
+        public void ticketAbono()
         {
             this.sameSQLTicket();
             serie = "TA";
@@ -502,10 +491,6 @@ namespace VeriFactu
                                        "AND YEAR(VEN_DataTicket) = '" + txtYear.Text + "' " +
                                        "AND VEN_Referencia = 'ABONO'";
 
-            
-
-
-            string msj = "Ticket creado correctamente";
 
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
 
@@ -547,13 +532,14 @@ namespace VeriFactu
                 InvoiceArray.simple = true;
                 this.buildCreditNote();
                 this.buildJson();
+                //MessageBox.Show("Ticket Abono creado correctamente");
+                System.Windows.Forms.Application.Exit();
             }
             else
             {
-                msj = "No se puede enviar un ticket duplicado";
+                //MessageBox.Show("No se puede crear Ticket Abono duplicado");
+                System.Windows.Forms.Application.Exit();
             }
-
-            return msj;
 
         }
 
@@ -567,9 +553,8 @@ namespace VeriFactu
 
             string tipo = "";
 
-            if (vendaTable.Rows[0].Field<string>("TipoDoc").ToString() != null)
+            /*if (vendaTable.Rows[0].Field<string>("TipoDoc").ToString() != null)
             {
-                //apiRecipient.irsId = vendaTable.Rows[0].Field<string>("TipoDoc").ToString(); //IrsIdType
                 tipo = vendaTable.Rows[0].Field<string>("TipoDoc");
 
                 if (tipo == "02")
@@ -583,9 +568,9 @@ namespace VeriFactu
             }
             else
             {
-                MessageBox.Show("Error: Falta el Pa�s del Cliente");
+                MessageBox.Show("Error: Falta el Tipo Documento del Cliente");
                 System.Windows.Forms.Application.Exit();
-            }
+            }*/
 
             //=====================numero de DNI (irsId)
 
@@ -598,13 +583,25 @@ namespace VeriFactu
                 char[] charsToTrim = { '*', ' ', '\'' };
                 dni = dni.Trim(charsToTrim);
 
-                if (tipo == "02")
+                if (vendaTable.Rows[0].Field<string>("TipoDoc").ToString() != null)
                 {
-                    recipientArray.irsId = dni;
+                    tipo = vendaTable.Rows[0].Field<string>("TipoDoc");
+
+                    if (tipo == "02")
+                    {
+                        recipientArray.irsId = dni;
+                        recipientArray.idType = null;
+                    }
+                    else
+                    {
+                        recipientArray.id = dni;
+                        recipientArray.idType = tipo;
+                    }
                 }
                 else
                 {
-                    recipientArray.id = dni;
+                    MessageBox.Show("Error: Falta el Tipo Documento del Cliente");
+                    System.Windows.Forms.Application.Exit();
                 }
 
             }
@@ -635,7 +632,7 @@ namespace VeriFactu
             }
             else
             {
-                MessageBox.Show("Error: Falta el Pa�s del Cliente");
+                MessageBox.Show("Error: Falta el Pais del Cliente");
                 System.Windows.Forms.Application.Exit();
             }
 
@@ -673,7 +670,7 @@ namespace VeriFactu
             }
             else
             {
-                MessageBox.Show("Error: Falta el Pa�s del Cliente");
+                MessageBox.Show("Error: Falta el nombre del Registro Mercantil del Cliente");
                 System.Windows.Forms.Application.Exit();
             }
 
@@ -683,7 +680,7 @@ namespace VeriFactu
             }
             else
             {
-                MessageBox.Show("Error: Falta el Pa�s del Cliente");
+                MessageBox.Show("Error: Falta el NIF de la Optica del Cliente");
                 System.Windows.Forms.Application.Exit();
             }
 
