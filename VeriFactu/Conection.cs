@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data.Odbc;
 using System.Data;
+using Microsoft.VisualBasic.Devices;
 
 namespace VeriFactu
 {
@@ -211,6 +212,35 @@ namespace VeriFactu
 
             return resultado;
         
+        }
+
+        private static object _lock = new object();
+
+        public static void PerformQuery(string query)
+        {
+            try
+            {
+                DataTable table = new DataTable();
+                using (OdbcConnection connection = new OdbcConnection(connectionString))
+                {
+                    lock (_lock)
+                    {
+                        OdbcDataAdapter command = new OdbcDataAdapter(query, connection);
+                        connection.Open();
+                        command.Fill(table);
+                        connection.Close();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Ha ocurrido un error al conectar con la base de datos! Si el problema persiste contacte con el administrador.\n" + ex.Message + "\n\n" + query,
+                                "Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+
+                Environment.Exit(1);
+            }
         }
 
         /*string parametrosInfo = "SQL: " + cmd.CommandText + "\n\nParámetros:\n";

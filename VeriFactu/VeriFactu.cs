@@ -281,6 +281,16 @@ namespace VeriFactu
 
                 vendaTable = Conection.SelectRows(sql_getVentas);
 
+                if (vendaTable.Rows[0].Field<string>("Nom").ToString() != null)
+                {
+                    nombre_cliente = vendaTable.Rows[0].Field<string>("Nom").ToString();
+                }
+                else
+                {
+                    MessageBox.Show("Error: Falta el Nombre del Cliente");
+                    System.Windows.Forms.Application.Exit();
+                }
+
                 if ((ImporTotalCheck > importe_minimo))
                 {
                     this.datosCliente();
@@ -373,6 +383,16 @@ namespace VeriFactu
                 ImporTotalCheck = Convert.ToDecimal(ImportTotalString);
 
                 vendaTable = Conection.SelectRows(sql_getVentas);
+
+                if (vendaTable.Rows[0].Field<string>("Nom").ToString() != null)
+                {
+                    nombre_cliente = vendaTable.Rows[0].Field<string>("Nom").ToString();
+                }
+                else
+                {
+                    MessageBox.Show("Error: Falta el Nombre del Cliente");
+                    System.Windows.Forms.Application.Exit();
+                }
 
                 //================DATOS DEL CLIENTE================
                 if ((ImporTotalCheck > importe_minimo))
@@ -525,6 +545,16 @@ namespace VeriFactu
 
                 vendaTable = Conection.SelectRows(sql_getVentas);
 
+                if (vendaTable.Rows[0].Field<string>("Nom").ToString() != null)
+                {
+                    nombre_cliente = vendaTable.Rows[0].Field<string>("Nom").ToString();
+                }
+                else
+                {
+                    MessageBox.Show("Error: Falta el Nombre del Cliente");
+                    System.Windows.Forms.Application.Exit();
+                }
+
                 ImportTotalString = Conection.SelectOnce(sql_getVenImportTotal).Replace(".", ",");
 
                 ImporTotalCheck = Convert.ToDecimal(ImportTotalString);
@@ -613,15 +643,7 @@ namespace VeriFactu
 
             //=====================numero de NOMBRE (name)
 
-            if (vendaTable.Rows[0].Field<string>("Nom").ToString() != null)
-            {
-                recipientArray.name = vendaTable.Rows[0].Field<string>("Nom").ToString();
-            }
-            else
-            {
-                MessageBox.Show("Error: Falta el Nombre del Cliente");
-                System.Windows.Forms.Application.Exit();
-            }
+            recipientArray.name = nombre_cliente;
 
             //=====================numero de CIUDAD (country)
 
@@ -1132,7 +1154,7 @@ namespace VeriFactu
 
             
 
-            if ((new_factura.message == "") || (new_factura.message is null) || (tipoForT == new_factura.chainInfo.number))
+            if ((new_factura.message == "") || (new_factura.message is null))
             {
 
 
