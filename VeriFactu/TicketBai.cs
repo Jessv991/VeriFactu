@@ -281,7 +281,6 @@ namespace VeriFactu
                           "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
                           "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
                           "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) ";
-            sqlSiguenteNumFact = "SELECT TOP 1 VEN_NumFactura + 1 AS nextFactura FROM VENDA WHERE VEN_Tienda = " + txtTienda.Text + " AND YEAR(VEN_Data) = '" + txtYear.Text + "' AND (VEN_Referencia IS NULL OR VEN_Referencia = '') ORDER BY VEN_NumFactura DESC";
 
             //================DATOS DEL CLIENTE================
 
@@ -390,8 +389,6 @@ namespace VeriFactu
                                              "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
                                              "AND v.VEN_Referencia = 'ABONO'";
 
-            sqlSiguenteNumFact = "SELECT TOP 1 VEN_NumFactura + 1 AS nextFacturaAbono FROM VENDA WHERE VEN_Tienda = " + txtTienda.Text + " AND YEAR(VEN_Data) = '" + txtYear.Text + "' AND VEN_Referencia = 'ABONO' ORDER BY VEN_NumFactura DESC";
-
 
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
 
@@ -472,8 +469,6 @@ namespace VeriFactu
                                             "AND YEAR(v.VEN_DataTicket) = '" + txtYear.Text + "' " +
                                             "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) ";
 
-            sqlSiguenteNumFact = "SELECT TOP 1 VEN_Ticket + 1 AS nextTicket FROM VENDA WHERE VEN_Tienda = " + txtTienda.Text + " AND YEAR(VEN_Data) = '" + txtYear.Text + "' AND (VEN_Referencia IS NULL OR VEN_Referencia = '') ORDER BY VEN_Ticket DESC";
-
 
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
 
@@ -543,8 +538,6 @@ namespace VeriFactu
                                        "AND VEN_Tienda = '" + txtTienda.Text + "' " +
                                        "AND YEAR(VEN_DataTicket) = '" + txtYear.Text + "' " +
                                        "AND VEN_Referencia = 'ABONO'";
-
-            sqlSiguenteNumFact = "SELECT TOP 1 VEN_Ticket + 1 AS nextTicketAbono FROM VENDA WHERE VEN_Tienda = " + txtTienda.Text + " AND YEAR(VEN_Data) = '" + txtYear.Text + "' AND VEN_Referencia = 'ABONO' ORDER BY VEN_Ticket DESC";
 
 
 
@@ -1111,17 +1104,8 @@ namespace VeriFactu
                         cmd.Parameters.Add(paramDateCreated);
 
                         Conection.ExecuteCommand(cmd);
-
-                        //using (OdbcConnection connection = new OdbcConnection(connectionString))
-                        //{
-                        //    cmd.Connection = connection;
-                        //    connection.Open();
-                        //    cmd.ExecuteNonQuery();
-                        //}
                     }
                 }
-
-                //System.Windows.Forms.Application.Exit();
 
             }
             else
@@ -1150,7 +1134,6 @@ namespace VeriFactu
 
                 }
             }
-            //MessageBox.Show("Factura creada");
             System.Windows.Forms.Application.Exit();
         }
 
@@ -1159,7 +1142,7 @@ namespace VeriFactu
             int VEN_CodiFactSent= 0; 
             int.TryParse(venCodigo, out VEN_CodiFactSent);
 
-            string TBAI_Queue = "";
+            /*string TBAI_Queue = "";
             string sql_TBAI_QueueAnterior = "SELECT TBAI_Queue FROM FACTURAS_HACIENDA_AUTO WHERE TBAI_Codi = " + (int.Parse(tbai_codifactura) - 1);
             string TBAI_QueueAnterior = Conection.SelectOnce(sql_TBAI_QueueAnterior);
             sql_maxTbaiQueue = "SELECT TBAI_Queue FROM FACTURAS_HACIENDA_AUTO WHERE TBAI_Queue >= " + TBAI_QueueAnterior + " AND FACT_Tienda = " + txtTienda.Text + "  ORDER BY TBAI_Queue ASC";
@@ -1208,7 +1191,27 @@ namespace VeriFactu
                 {
                     TBAI_Queue = (valor + 1).ToString();
                 }
-            }
+            }*/
+
+            sql_maxTbaiQueue = @"SELECT 
+                        CAST(ISNULL((
+                            SELECT MIN(f1.TBAI_Queue) + 1
+                            FROM FACTURAS_HACIENDA_AUTO AS f1
+                            WHERE 
+                                (YEAR(f1.ven_dataFactura) = '" + txtYear.Text + "' OR YEAR(f1.ven_dataticket) = '" + txtYear.Text + @"')
+                                AND NOT EXISTS (
+                                    SELECT 1
+                                    FROM FACTURAS_HACIENDA_AUTO AS f2
+                                    WHERE f2.TBAI_Queue = f1.TBAI_Queue + 1
+                                    AND (YEAR(f2.ven_dataFactura) = '" + txtYear.Text + "' OR YEAR(f2.ven_dataticket) = '" + txtYear.Text + @"')
+                                )
+                        ), 
+                        (SELECT MAX(TBAI_Queue) + 1 
+                         FROM FACTURAS_HACIENDA_AUTO
+                         WHERE YEAR(ven_dataFactura) = '" + txtYear.Text + "' OR YEAR(ven_dataticket) = '" + txtYear.Text + @"')
+                        ) AS INT) AS NextQueueValue";
+
+            string TBAI_Queue = Conection.SelectOnce(sql_maxTbaiQueue);
 
             var client2 = new RestClient(new RestClientOptions(TicketBai_DB.Trim())
             {
@@ -1266,18 +1269,41 @@ namespace VeriFactu
             //=====================OBTENER NOMBRE Y TIENDA DEL CLIENTE DE LA DESCRIPCIÓN=====================
             var datosFactura = jsonObject["tbai:TicketBai"]?["Factura"]?["DatosFactura"]?["DescripcionFactura"]?.ToString();
             string nombreCli = "";
+            string TipoFact = "";
+            string startText = "";
+            string startTextExpresion = "";
+            string TipoFactExpresion = "";
+            string yearFactExpresion = "";
+            string yearFact = "";
+            string textTipoFact = "";
             int tienda = 0;
             int ventaNumero = 0;
             System.Data.Odbc.OdbcCommand cmd2;
 
             // Extraer nombre después de "EMITIDA A"
             Match matchNombre = Regex.Match(datosFactura, @"EMITIDA A\s+(.+?)\s+DE LA VENTA");
-
-            // Extraer número de tienda después de "F/"
-            Match matchTienda = Regex.Match(datosFactura, @"F\/(\d+)\/");
-
             // Extraer número final de venta después de "DE LA VENTA"
             Match matchVenta = Regex.Match(datosFactura, @"DE LA VENTA\s+[\d]+\/(\d+)");
+
+            Match matchStartText = Regex.Match(datosFactura, @"^(.*?)\b(F(A)?|T(A)?)\/", RegexOptions.IgnoreCase);
+
+            if (matchStartText.Success)
+            {
+                startText = matchStartText.Groups[1].Value.Trim();
+                startTextExpresion = $@"{Regex.Escape(startText)}\s+([A-Z]+)\/";
+            }
+
+            Match matchTipoFact = Regex.Match(datosFactura, startTextExpresion);
+
+            if (matchTipoFact.Success)
+            {
+                TipoFact = matchTipoFact.Groups[1].Value.Trim();
+                TipoFactExpresion = $@"{Regex.Escape(TipoFact)}\/(\d+)\/";
+            }
+            // Extraer número de tienda después de "F/"
+            Match matchTienda = Regex.Match(datosFactura, TipoFactExpresion);
+
+
 
 
 
@@ -1286,7 +1312,37 @@ namespace VeriFactu
                 nombreCli = matchNombre.Groups[1].Value.Trim();
                 int.TryParse(matchTienda.Groups[1].Value, out tienda);
                 int.TryParse(matchVenta.Groups[1].Value, out ventaNumero);
+                yearFactExpresion = $@"{Regex.Escape(tienda.ToString())}\/(\d{{4}})\/";
             }
+            
+            Match matchYearFact = Regex.Match(datosFactura, yearFactExpresion);
+
+            if (matchYearFact.Success)
+            {
+                yearFact = matchYearFact.Groups[1].Value.Trim();
+            }
+
+            if (TipoFact == "F")
+            {
+                textTipoFact = "la Factura";
+                sqlSiguenteNumFact = "SELECT TOP 1 VEN_NumFactura + 1 AS nextFactura FROM VENDA WHERE VEN_Tienda = " + tienda + " AND YEAR(VEN_Data) = '" + yearFact + "' AND (VEN_Referencia IS NULL OR VEN_Referencia = '') ORDER BY VEN_NumFactura DESC";
+            }
+            else if (TipoFact == "FA")
+            {
+                textTipoFact = "la Factura Abono";
+                sqlSiguenteNumFact = "SELECT TOP 1 VEN_NumFactura + 1 AS nextFacturaAbono FROM VENDA WHERE VEN_Tienda = " + tienda + " AND YEAR(VEN_Data) = '" + yearFact + "' AND VEN_Referencia = 'ABONO' ORDER BY VEN_NumFactura DESC";
+            }
+            else if (TipoFact == "T")
+            {
+                textTipoFact = "el Ticket";
+                sqlSiguenteNumFact = "SELECT TOP 1 VEN_Ticket + 1 AS nextTicket FROM VENDA WHERE VEN_Tienda = " + tienda + " AND YEAR(VEN_Data) = '" + yearFact + "' AND (VEN_Referencia IS NULL OR VEN_Referencia = '') ORDER BY VEN_Ticket DESC";
+            }
+            else if (TipoFact == "TA")
+            {
+                textTipoFact = "el Ticket Abono";
+                sqlSiguenteNumFact = "SELECT TOP 1 VEN_Ticket + 1 AS nextTicketAbono FROM VENDA WHERE VEN_Tienda = " + tienda + " AND YEAR(VEN_Data) = '" + yearFact + "' AND VEN_Referencia = 'ABONO' ORDER BY VEN_Ticket DESC";
+            }
+
             //=====================OBTENER EL VEN_NumFactura DE LA RESPUESTA QUE NOS ARROJA LA API=====================
             string siguenteNumFact = "";
             if (VEN_CodiFactSent == ventaNumero)
@@ -1302,15 +1358,15 @@ namespace VeriFactu
 
             string consultaSQLventa = "";
 
-            if (txtTipo.Text == "F")
+            if (TipoFact == "F" || TipoFact == "FA")
             {
 
                 consultaSQLventa = "UPDATE VENDA SET VEN_NumFactura =?, VEN_Factura =?, VEN_DataFactura =?, VEN_DataDoc =? WHERE VEN_Codi = " + ventaNumero + " AND VEN_Tienda = " + tienda;
 
             }
-            else if (txtTipo.Text == "T")
+            else
             {
-                consultaSQLventa = "UPDATE VENDA SET VEN_Ticket =?, VEN_DataTicket =?, VEN_DataDoc =? WHERE VEN_Codi = '" + ventaNumero + "AND VEN_Tienda = " + tienda;
+                consultaSQLventa = "UPDATE VENDA SET VEN_Ticket =?, VEN_DataTicket =?, VEN_DataDoc =? WHERE VEN_Codi = " + ventaNumero + " AND VEN_Tienda = " + tienda;
 
             }
 
@@ -1321,7 +1377,7 @@ namespace VeriFactu
                 paramVEN_NumFactura.OdbcType = System.Data.Odbc.OdbcType.Int;
                 paramVEN_NumFactura.Value = numFacturaOld;
                 cmd2.Parameters.Add(paramVEN_NumFactura);
-                if (txtTipo.Text == "F" || txtTipo.Text == "FA")
+                if (TipoFact == "F" || TipoFact == "FA")
                 {
                     System.Data.Odbc.OdbcParameter paramVEN_Factura = new System.Data.Odbc.OdbcParameter();
                     paramVEN_Factura.OdbcType = System.Data.Odbc.OdbcType.Text;
@@ -1342,7 +1398,7 @@ namespace VeriFactu
             using (var cmdInsert = new System.Data.Odbc.OdbcCommand())
             {
 
-                if (txtTipo.Text == "F" || txtTipo.Text == "FA")
+                if (TipoFact == "F" || TipoFact == "FA")
                 {
                     if (VEN_CodiFactSent == ventaNumero)
                     {
@@ -1350,14 +1406,14 @@ namespace VeriFactu
                     }
                     else
                     {
-                        cmdInsert.Parameters.AddWithValue("@FACT_Tienda", tienda);
-                        cmdInsert.Parameters.AddWithValue("@FACT_Tipo", txtTipo.Text);
                         cmdInsert.CommandText = @"
                                         INSERT INTO FACTURAS_HACIENDA_AUTO 
                                         (FACT_Codi, FACT_Tienda, FACT_Tipo, VEN_NumFactura, VEN_DataFactura, 
                                          TBAI_Codi, TBAI_Id, TBAI_Qr, TBAI_Url, TBAI_Queue, 
                                          TBAI_Xml, TBAI_ImgQr, TBAI_Data, TBAI_Hash, TBAI_Estado, TBAI_mensaje)
-                                        VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?)";
+                                        VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        cmdInsert.Parameters.AddWithValue("@FACT_Tienda", tienda);
+                        cmdInsert.Parameters.AddWithValue("@FACT_Tipo", TipoFact);
                         cmdInsert.Parameters.AddWithValue("@VEN_NumFactura", numFacturaOld);
                         cmdInsert.Parameters.AddWithValue("@VEN_DataFactura", dataFactura);
                     }
@@ -1370,14 +1426,14 @@ namespace VeriFactu
                     }
                     else
                     {
-                        cmdInsert.Parameters.AddWithValue("@FACT_Tienda", tienda);
-                        cmdInsert.Parameters.AddWithValue("@FACT_Tipo", txtTipo.Text);
                         cmdInsert.CommandText = @"
                                     INSERT INTO FACTURAS_HACIENDA_AUTO 
                                     (FACT_Codi, FACT_Tienda, FACT_Tipo, VEN_Ticket, VEN_DataTicket, 
                                      TBAI_Codi, TBAI_Id, TBAI_Qr, TBAI_Url, TBAI_Queue, 
                                      TBAI_Xml, TBAI_ImgQr, TBAI_Data, TBAI_Hash, TBAI_Estado, TBAI_mensaje)
-                                    VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, ?, ?)";
+                                    VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                        cmdInsert.Parameters.AddWithValue("@FACT_Tienda", tienda);
+                        cmdInsert.Parameters.AddWithValue("@FACT_Tipo", TipoFact);
                         cmdInsert.Parameters.AddWithValue("@VEN_Ticket", numFacturaOld);
                         cmdInsert.Parameters.AddWithValue("@VEN_DataTicket", dataFactura);
                     }
@@ -1416,7 +1472,7 @@ namespace VeriFactu
             //<TargetFramework>net8.0-windows7.0</TargetFramework>
 
 
-            MessageBox.Show("No estaba registrado en la Base de Datos la Factura Nº " + numFacturaOld + " del cliente " + nombreCli + " y con fecha " + dataFactura + ". Hemos realizado su registro");
+            MessageBox.Show("No estaba registrado en la Base de Datos " + textTipoFact + " Nº " + numFacturaOld + " del cliente " + nombreCli + " y con fecha " + dataFactura + ". Hemos realizado su registro");
 
             if (VEN_CodiFactSent == ventaNumero)
             {
