@@ -55,6 +55,7 @@ namespace VeriFactu
         static string sql_recargoEquivalenciaCliente = System.String.Empty;
         static string sql_recargoEquivalencia = System.String.Empty;
         static string sql_datosIssureTienda = System.String.Empty;
+        static string sql_updateStateDelete = System.String.Empty;
         static string recargo_equivalencia_empresa = System.String.Empty;
         static string recargo_equivalencia_cliente = System.String.Empty;
         static string TicketBai_DB = System.String.Empty;
@@ -1424,7 +1425,7 @@ namespace VeriFactu
 
         public string deleteOrState()
         {
-            string sql_tipoForT= "SELECT TBAI_Id FROM FACTURAS_HACIENDA_AUTO WHERE TBAI_Queue = '" + txtFactura.Text + "'";
+            string sql_tipoForT= "SELECT TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE TBAI_Queue = '" + txtFactura.Text + "'";
             string tipoForT= Conection.SelectOnce(sql_tipoForT);
             string msjReturn = "";
 
@@ -1444,9 +1445,13 @@ namespace VeriFactu
             }
             else if (txtTipo.Text == "D")
             {
-                sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_UserId=?, TBAI_Data = ?, TBAI_Hash  = ?, TBAI_Xml = ?, TBAI_Queue = ?, TBAI_Estado=?, TBAI_mensaje = ? WHERE " +
-                                        "TBAI_Id = '" + tipoForT + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND TBAI_Queue IS NULL";
-                sql_updateFactura_KO = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Mensaje = ? WHERE TBAI_Id = '" + tipoForT + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND TBAI_Queue IS NULL";
+                sql_updateStateDelete = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Estado = 'Cancelada' WHERE " +
+                                        "TBAI_Codi = '" + tipoForT + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND TBAI_Queue = " + txtFactura.Text;
+                Conection.PerformQuery(sql_updateStateDelete);
+
+                sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_UserId=?, TBAI_Data = ?, TBAI_Id = ?, TBAI_Hash = ?, TBAI_Xml = ?, TBAI_Queue = ?, TBAI_Estado=?, TBAI_mensaje = ? WHERE " +
+                                        "TBAI_Codi = '" + tipoForT + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND TBAI_Queue IS NULL";
+                sql_updateFactura_KO = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Mensaje = ? WHERE TBAI_Codi = '" + tipoForT + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND TBAI_Queue IS NULL";
 
                 request = new RestRequest("verifactu/v1/invoice_cancel", Method.Post);
                 request.AddStringBody(txtFactura.Text, DataFormat.Json);
@@ -1504,6 +1509,10 @@ namespace VeriFactu
                         paramTBAI_Data.OdbcType = System.Data.Odbc.OdbcType.Date;
                         paramTBAI_Data.Value = issuedTime;
                         cmd.Parameters.Add(paramTBAI_Data);
+                        System.Data.Odbc.OdbcParameter paramTBAI_Id = new System.Data.Odbc.OdbcParameter();
+                        paramTBAI_Id.OdbcType = System.Data.Odbc.OdbcType.Date;
+                        paramTBAI_Id.Value = new_factura.chainInfo.number;
+                        cmd.Parameters.Add(paramTBAI_Id);
                         System.Data.Odbc.OdbcParameter paramTBAI_Hash = new System.Data.Odbc.OdbcParameter();
                         paramTBAI_Hash.OdbcType = System.Data.Odbc.OdbcType.Text;
                         paramTBAI_Hash.Value = new_factura.chainInfo.hash;

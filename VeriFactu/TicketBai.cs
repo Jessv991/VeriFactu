@@ -188,14 +188,7 @@ namespace VeriFactu
             }
             else if (txtTipo.Text[0] == 'D' || txtTipo.Text[0] == 'S')
             {
-                if ((txtTipo.Text[0] == 'D' && result_contTBAI_Codi < 2) || (txtTipo.Text[0] == 'S'))
-                {
-                    this.deleteOrState();
-                }
-                else
-                {
-                    MessageBox.Show("Esta factura ya fue cancelada.");
-                }
+                this.deleteOrState();
                 System.Windows.Forms.Application.Exit();
             }
             else
@@ -1233,7 +1226,7 @@ namespace VeriFactu
                 MaxTimeout = -1
             });
 
-            var request2 = new RestRequest("ticketbai_api/v1/invoice_data/197", Method.Get);
+            var request2 = new RestRequest("ticketbai_api/v1/invoice_data/" + TBAI_Queue, Method.Get);
 
 
 
@@ -1415,7 +1408,7 @@ namespace VeriFactu
                 DateTime fechaOldFact = DateTime.Parse(dataFacturaOld);
                 dataFactura = fechaOldFact.ToString("yyyy-MM-dd");
 
-                var sqlNumFactCancelada = "SELECT VEN_NumFactura FROM FACTURAS_HACIENDA_AUTO where TBAI_Id = '" + old_factura.tbaiId + "'";
+                var sqlNumFactCancelada = "SELECT VEN_NumFactura FROM FACTURAS_HACIENDA_AUTO where TBAI_Codi = '" + TBAI_CodiOld + "'";
 
                 siguenteNumFact = Conection.SelectOnce(sqlNumFactCancelada);
 
