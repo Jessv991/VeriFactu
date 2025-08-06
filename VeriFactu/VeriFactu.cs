@@ -207,7 +207,7 @@ namespace VeriFactu
 
             sql_getTbaiCodiReenvio = "SELECT TBAI_Codi as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='" + txtTipo.Text + "' AND VEN_NumFactura = '" + txtFactura.Text + "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
 
-            sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Codi = ?, TBAI_Id = ?, TBAI_Qr = ?, TBAI_Url = ?, TBAI_Queue = ?, TBAI_Xml = ?, TBAI_ImgQr = ?, TBAI_Data = ?, TBAI_Hash  = ?, TBAI_Estado=?, TBAI_UserId=?, TBAI_mensaje = ? WHERE " +
+            sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Codi = ?, TBAI_Id = ?, TBAI_Queue = ?, TBAI_Xml = ?, TBAI_Data = ?, TBAI_Hash  = ?, TBAI_UserId=?, TBAI_Estado=?, TBAI_mensaje = ?, TBAI_Qr = ?, TBAI_Url = ?, TBAI_ImgQr = ? WHERE " +
                                         "VEN_NumFactura = '" + txtFactura.Text + "' " +
                                         "AND FACT_Tienda = '" + txtTienda.Text + "' " +
                                         "AND FACT_Tipo = '" + txtTipo.Text +
@@ -229,7 +229,7 @@ namespace VeriFactu
 
             sql_getTbaiCodiReenvio = "SELECT TBAI_Codi as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='" + txtTipo.Text + "' AND VEN_Ticket = '" + txtFactura.Text + "' AND YEAR(VEN_DataTicket) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
 
-            sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Codi = ?, TBAI_Id = ?, TBAI_Qr = ?, TBAI_Url = ?, TBAI_Queue = ?, TBAI_Xml = ?, TBAI_ImgQr = ?, TBAI_Data = ?, TBAI_Hash  = ?, TBAI_Estado=?, TBAI_UserId=?, TBAI_mensaje = ? WHERE " +
+            sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Codi = ?, TBAI_Id = ?, TBAI_Queue = ?, TBAI_Xml = ?, TBAI_Data = ?, TBAI_Hash  = ?, TBAI_UserId=?, TBAI_Estado=?, TBAI_mensaje = ?, TBAI_Qr = ?, TBAI_Url = ?, TBAI_ImgQr = ? WHERE " +
                                         "VEN_Ticket = '" + txtFactura.Text + "' " +
                                         "AND FACT_Tienda = '" + txtTienda.Text + "' " +
                                         "AND FACT_Tipo = '" + txtTipo.Text +
@@ -730,7 +730,7 @@ namespace VeriFactu
 
             venCodigo = vendaTable.Rows[0].Field<int>("VEN_Codi").ToString();
 
-            idArray.number = serie + tbai_codifactura + "/" + txtTienda.Text + "/" + txtYear.Text;
+            idArray.number = serie + "/" + tbai_codifactura + "/" + txtTienda.Text + "/" + txtYear.Text;
 
             //=====================issuedTime (issuedTime de factura)
             if (txtTipo.Text == "F" || txtTipo.Text == "FA")
@@ -949,7 +949,7 @@ namespace VeriFactu
             if (consultAgainTBAI_Codi == true)
             {
                 tbai_codifactura = Conection.SelectOnce(sql_getTbaiCodi);
-                idArray.number = serie + tbai_codifactura + "/" + txtTienda.Text + "/" + txtYear.Text;
+                idArray.number = serie + "/" + tbai_codifactura + "/" + txtTienda.Text + "/" + txtYear.Text;
                 apijsonInvoice.invoice = InvoiceArray;
             }
 
@@ -1006,7 +1006,7 @@ namespace VeriFactu
                     // insert this file in the database
                     using (System.Data.Odbc.OdbcCommand cmd = new System.Data.Odbc.OdbcCommand())
                     {
-                        //TBAI_Codi = ?, TBAI_Id = ?, TBAI_Qr = ?, TBAI_Url = ?, TBAI_Queue = ?, TBAI_Xml = ?, TBAI_ImgQr = ?, TBAI_Data = ?, TBAI_Hash = ?, TBAI_Estado=?, TBAI_UserId=?, TBAI_mensaje = ?, 
+                        //TBAI_Codi = ?, TBAI_Id = ?, TBAI_Queue = ?, TBAI_Xml = ?, TBAI_Data = ?, TBAI_Hash  = ?, TBAI_UserId=?, TBAI_Estado=?, TBAI_mensaje = ?, TBAI_Qr = ?, TBAI_Url = ?, TBAI_ImgQr = ?
                         cmd.CommandText = sql_updateFactura;
                         System.Data.Odbc.OdbcParameter paramTBAI_Codi = new System.Data.Odbc.OdbcParameter();
                         paramTBAI_Codi.OdbcType = System.Data.Odbc.OdbcType.Int;
@@ -1016,14 +1016,6 @@ namespace VeriFactu
                         paramTBAI_Id.OdbcType = System.Data.Odbc.OdbcType.Text;
                         paramTBAI_Id.Value = new_factura.chainInfo.number;
                         cmd.Parameters.Add(paramTBAI_Id);
-                        System.Data.Odbc.OdbcParameter paramTBAI_Qr = new System.Data.Odbc.OdbcParameter();
-                        paramTBAI_Qr.OdbcType = System.Data.Odbc.OdbcType.Text;
-                        paramTBAI_Qr.Value = new_factura.qrcode;//====HECHO
-                        cmd.Parameters.Add(paramTBAI_Qr);
-                        System.Data.Odbc.OdbcParameter paramTBAI_Url = new System.Data.Odbc.OdbcParameter();
-                        paramTBAI_Url.OdbcType = System.Data.Odbc.OdbcType.Text;
-                        paramTBAI_Url.Value = new_factura.verifactuUrl;
-                        cmd.Parameters.Add(paramTBAI_Url);
                         System.Data.Odbc.OdbcParameter paramTBAI_Queue = new System.Data.Odbc.OdbcParameter();
                         paramTBAI_Queue.OdbcType = System.Data.Odbc.OdbcType.Text;
                         paramTBAI_Queue.Value = new_factura.queueId;
@@ -1032,10 +1024,6 @@ namespace VeriFactu
                         paramTBAI_Xml.OdbcType = System.Data.Odbc.OdbcType.Text;
                         paramTBAI_Xml.Value = new_factura.verifactuXml;//====HECHO
                         cmd.Parameters.Add(paramTBAI_Xml);
-                        System.Data.Odbc.OdbcParameter paramTBAI_ImgQr = new System.Data.Odbc.OdbcParameter();
-                        paramTBAI_ImgQr.OdbcType = System.Data.Odbc.OdbcType.Image;
-                        paramTBAI_ImgQr.Value = fileData;
-                        cmd.Parameters.Add(paramTBAI_ImgQr);
                         System.Data.Odbc.OdbcParameter paramTBAI_Data = new System.Data.Odbc.OdbcParameter();
                         paramTBAI_Data.OdbcType = System.Data.Odbc.OdbcType.Date;
                         paramTBAI_Data.Value = issuedTime;
@@ -1044,18 +1032,30 @@ namespace VeriFactu
                         paramTBAI_Hash.OdbcType = System.Data.Odbc.OdbcType.Text;
                         paramTBAI_Hash.Value = new_factura.chainInfo.hash;
                         cmd.Parameters.Add(paramTBAI_Hash);
-                        System.Data.Odbc.OdbcParameter paramTBAI_Estado = new System.Data.Odbc.OdbcParameter();
-                        paramTBAI_Estado.OdbcType = System.Data.Odbc.OdbcType.Text;
-                        paramTBAI_Estado.Value = "En cola";
-                        cmd.Parameters.Add(paramTBAI_Estado);
                         System.Data.Odbc.OdbcParameter paramTBAI_UserId = new System.Data.Odbc.OdbcParameter();
                         paramTBAI_UserId.OdbcType = System.Data.Odbc.OdbcType.Text;
                         paramTBAI_UserId.Value = new_factura.chainInfo.issuerIrsId;
                         cmd.Parameters.Add(paramTBAI_UserId);
-                        System.Data.Odbc.OdbcParameter paramDateCreated = new System.Data.Odbc.OdbcParameter();
-                        paramDateCreated.OdbcType = System.Data.Odbc.OdbcType.Text;
-                        paramDateCreated.Value = "Factura insertada correctamente";
-                        cmd.Parameters.Add(paramDateCreated);
+                        System.Data.Odbc.OdbcParameter paramTBAI_Estado = new System.Data.Odbc.OdbcParameter();
+                        paramTBAI_Estado.OdbcType = System.Data.Odbc.OdbcType.Text;
+                        paramTBAI_Estado.Value = "En cola";
+                        cmd.Parameters.Add(paramTBAI_Estado);
+                        System.Data.Odbc.OdbcParameter paramTBAI_mensaje = new System.Data.Odbc.OdbcParameter();
+                        paramTBAI_mensaje.OdbcType = System.Data.Odbc.OdbcType.Text;
+                        paramTBAI_mensaje.Value = "Factura insertada correctamente";
+                        cmd.Parameters.Add(paramTBAI_mensaje);
+                        System.Data.Odbc.OdbcParameter paramTBAI_Qr = new System.Data.Odbc.OdbcParameter();
+                        paramTBAI_Qr.OdbcType = System.Data.Odbc.OdbcType.Text;
+                        paramTBAI_Qr.Value = new_factura.qrcode;
+                        cmd.Parameters.Add(paramTBAI_Qr);
+                        System.Data.Odbc.OdbcParameter paramTBAI_Url = new System.Data.Odbc.OdbcParameter();
+                        paramTBAI_Url.OdbcType = System.Data.Odbc.OdbcType.Text;
+                        paramTBAI_Url.Value = new_factura.verifactuUrl;
+                        cmd.Parameters.Add(paramTBAI_Url);
+                        System.Data.Odbc.OdbcParameter paramTBAI_ImgQr = new System.Data.Odbc.OdbcParameter();
+                        paramTBAI_ImgQr.OdbcType = System.Data.Odbc.OdbcType.Image;
+                        paramTBAI_ImgQr.Value = fileData;
+                        cmd.Parameters.Add(paramTBAI_ImgQr);
 
                         Conection.ExecuteCommand(cmd);
                     }
@@ -1091,8 +1091,21 @@ namespace VeriFactu
 
         public void consultDuplicate()
         {
+            //=======================DECLARACIÓN DE VARIABLES========================
+            string nombreCli = "";
+            string TipoFact = "";
+            string TipoFactExpresion = "";
+            string yearFactExpresion = "";
+            string yearFact = "";
+            string textTipoFact = "";
+            string siguenteNumFact = "";
+            int tienda = 0;
+            int ventaNumero = 0;
+            int numFacturaOld = 0;
             int VEN_CodiFactSent = 0;
             int.TryParse(venCodigo, out VEN_CodiFactSent);
+
+            //=======================INICIO DE LA LOGICA========================
 
             sql_maxTbaiQueue = @"SELECT 
                         CAST(ISNULL((
@@ -1134,10 +1147,10 @@ namespace VeriFactu
 
             txtJson.Text = $"Status: {respuestaApi.StatusCode}\n\n{respuestaApi.Content}";
 
-            apiTicketBai.Factura old_factura = JsonConvert.DeserializeObject<apiTicketBai.Factura>(respuestaApi.Content);
+            apiVerifactu.apiResponse old_factura = JsonConvert.DeserializeObject<apiVerifactu.apiResponse>(respuestaApi.Content);
 
             // Convertir a XML
-            string base64Xml = old_factura.tbaiXml;
+            string base64Xml = old_factura.verifactuXml;
             byte[] xmlBytes = Convert.FromBase64String(base64Xml);
             string xmlString = Encoding.UTF8.GetString(xmlBytes);
 
@@ -1158,134 +1171,117 @@ namespace VeriFactu
             //=====================OBTENER EL TBAI_Codi DE LA RESPUESTA QUE NOS ARROJA LA API=====================
             var chainInfoNumber = old_factura.chainInfo.number;
             var matchTBAI_CodiOld = Regex.Match(chainInfoNumber, @"\b(F(A)?|T(A)?)\/(\d+)\/", RegexOptions.IgnoreCase);
+            var matchTienda = Regex.Match(chainInfoNumber, @"\b(F(A)?|T(A)?)\/\d+/(\d+)\/", RegexOptions.IgnoreCase);
+            var matchTipoFact = Regex.Match(chainInfoNumber, @"\b(F(A)?|T(A)?)\/", RegexOptions.IgnoreCase);
+            var matchYearFact = Regex.Match(chainInfoNumber, @"\b(?:F|FA|T|TA)/\d+/\d+/(\d{4})", RegexOptions.IgnoreCase);
+
 
             int TBAI_CodiOld = 0;//ESTO HA CAMBIADO
-            if (matchTBAI_CodiOld.Success)
+            if (matchTBAI_CodiOld.Success && matchTienda.Success && matchTipoFact.Success && matchYearFact.Success)
             {
                 int.TryParse(matchTBAI_CodiOld.Groups[4].Value, out TBAI_CodiOld);
-            }
-
-            //=====================OBTENER NOMBRE Y TIENDA DEL CLIENTE DE LA DESCRIPCIÓN=====================
-            var datosFactura = jsonObject["tbai:TicketBai"]?["Factura"]?["DatosFactura"]?["DescripcionFactura"]?.ToString();
-            string nombreCli = "";
-            string TipoFact = "";
-            string startText = "";
-            string startTextExpresion = "";
-            string TipoFactExpresion = "";
-            string yearFactExpresion = "";
-            string yearFact = "";
-            string textTipoFact = "";
-            int tienda = 0;
-            int ventaNumero = 0;
-            System.Data.Odbc.OdbcCommand cmd2;
-
-            // Extraer nombre después de "EMITIDA A"
-            Match matchNombre = Regex.Match(datosFactura, @"EMITIDA A\s+(.+?)\s+DE LA VENTA");
-            // Extraer número final de venta después de "DE LA VENTA"
-            Match matchVenta = Regex.Match(datosFactura, @"DE LA VENTA\s+[\d]+\/(\d+)");
-
-            Match matchStartText = Regex.Match(datosFactura, @"^(.*?)\b(F(A)?|T(A)?)\/", RegexOptions.IgnoreCase);
-
-            Match matchTienda = Regex.Match(datosFactura, @"DE LA VENTA\s+(\d+)\/\d+");//cogemos la tienda
-
-
-            if (matchStartText.Success)
-            {
-                startText = matchStartText.Groups[1].Value.Trim();
-                startTextExpresion = $@"{Regex.Escape(startText)}\s+([A-Z]+)\/";
-            }
-
-            Match matchTipoFact = Regex.Match(datosFactura, startTextExpresion);
-
-            if (matchTipoFact.Success)
-            {
-                TipoFact = matchTipoFact.Groups[1].Value.Trim();//HASTA AQUÍ ESTÁ TODO BIEN
-            }
-
-
-            Match matchYearFact = Regex.Match(datosFactura, @"\b(?:F|FA|T|TA)/\d+/(\d{4})");
-
-
-
-            if (matchNombre.Success && matchTienda.Success && matchVenta.Success && matchYearFact.Success)
-            {
-                nombreCli = matchNombre.Groups[1].Value.Trim();
-                int.TryParse(matchTienda.Groups[1].Value, out tienda);
-                int.TryParse(matchVenta.Groups[1].Value, out ventaNumero);
+                int.TryParse(matchTienda.Groups[4].Value, out tienda);
+                TipoFact = matchTipoFact.Groups[1].Value.Trim();
                 yearFact = matchYearFact.Groups[1].Value.Trim();
             }
 
-            if (TipoFact == "F")
+            if (!string.IsNullOrEmpty(old_factura.qrcode))
             {
-                textTipoFact = "la Factura";
-                sqlSiguenteNumFact = "SELECT TOP 1 VEN_NumFactura + 1 AS nextFactura FROM VENDA WHERE VEN_Tienda = " + tienda + " AND YEAR(VEN_Data) = '" + yearFact + "' AND (VEN_Referencia IS NULL OR VEN_Referencia = '') ORDER BY VEN_NumFactura DESC";
-            }
-            else if (TipoFact == "FA")
-            {
-                textTipoFact = "la Factura Abono";
-                sqlSiguenteNumFact = "SELECT TOP 1 VEN_NumFactura + 1 AS nextFacturaAbono FROM VENDA WHERE VEN_Tienda = " + tienda + " AND YEAR(VEN_Data) = '" + yearFact + "' AND VEN_Referencia = 'ABONO' ORDER BY VEN_NumFactura DESC";
-            }
-            else if (TipoFact == "T")
-            {
-                textTipoFact = "el Ticket";
-                sqlSiguenteNumFact = "SELECT TOP 1 VEN_Ticket + 1 AS nextTicket FROM VENDA WHERE VEN_Tienda = " + tienda + " AND YEAR(VEN_Data) = '" + yearFact + "' AND (VEN_Referencia IS NULL OR VEN_Referencia = '') ORDER BY VEN_Ticket DESC";
-            }
-            else if (TipoFact == "TA")
-            {
-                textTipoFact = "el Ticket Abono";
-                sqlSiguenteNumFact = "SELECT TOP 1 VEN_Ticket + 1 AS nextTicketAbono FROM VENDA WHERE VEN_Tienda = " + tienda + " AND YEAR(VEN_Data) = '" + yearFact + "' AND VEN_Referencia = 'ABONO' ORDER BY VEN_Ticket DESC";
-            }
+                //=====================OBTENER NOMBRE Y TIENDA DEL CLIENTE DE LA DESCRIPCIÓN=====================
+                var datosFactura = jsonObject["sum:RegistroFactura"]?["RegistroAlta"]?["DescripcionOperacion"]?.ToString();
+                System.Data.Odbc.OdbcCommand cmd2;
 
-            //=====================OBTENER EL VEN_NumFactura DE LA RESPUESTA QUE NOS ARROJA LA API=====================
-            string siguenteNumFact = "";
-            if (VEN_CodiFactSent == ventaNumero)
-            {
-                siguenteNumFact = txtFactura.Text;
-            }
-            else
-            {
-                siguenteNumFact = Conection.SelectOnce(sqlSiguenteNumFact);
-            }
-            int numFacturaOld = 0;
-            int.TryParse(siguenteNumFact, out numFacturaOld);
+                // Extraer nombre después de "EMITIDA A"
+                Match matchNombre = Regex.Match(datosFactura, @"EMITIDA A\s+(.+?)\s+DE LA VENTA");
+                // Extraer número final de venta después de "DE LA VENTA"
+                Match matchVenta = Regex.Match(datosFactura, @"DE LA VENTA\s+[\d]+\/(\d+)");
 
-            string consultaSQLventa = "";
 
-            if (TipoFact == "F" || TipoFact == "FA")
-            {
+                if (matchNombre.Success && matchVenta.Success)
+                {
+                    nombreCli = matchNombre.Groups[1].Value.Trim();
+                    int.TryParse(matchVenta.Groups[1].Value, out ventaNumero);
+                }
 
-                consultaSQLventa = "UPDATE VENDA SET VEN_NumFactura =?, VEN_Factura =?, VEN_DataFactura =?, VEN_DataDoc =? WHERE VEN_Codi = " + ventaNumero + " AND VEN_Tienda = " + tienda;
+                if (TipoFact == "F")
+                {
+                    textTipoFact = "la Factura";
+                    sqlSiguenteNumFact = "SELECT TOP 1 VEN_NumFactura + 1 AS nextFactura FROM VENDA WHERE VEN_Tienda = " + tienda + " AND YEAR(VEN_Data) = '" + yearFact + "' AND (VEN_Referencia IS NULL OR VEN_Referencia = '') ORDER BY VEN_NumFactura DESC";
+                }
+                else if (TipoFact == "FA")
+                {
+                    textTipoFact = "la Factura Abono";
+                    sqlSiguenteNumFact = "SELECT TOP 1 VEN_NumFactura + 1 AS nextFacturaAbono FROM VENDA WHERE VEN_Tienda = " + tienda + " AND YEAR(VEN_Data) = '" + yearFact + "' AND VEN_Referencia = 'ABONO' ORDER BY VEN_NumFactura DESC";
+                }
+                else if (TipoFact == "T")
+                {
+                    textTipoFact = "el Ticket";
+                    sqlSiguenteNumFact = "SELECT TOP 1 VEN_Ticket + 1 AS nextTicket FROM VENDA WHERE VEN_Tienda = " + tienda + " AND YEAR(VEN_Data) = '" + yearFact + "' AND (VEN_Referencia IS NULL OR VEN_Referencia = '') ORDER BY VEN_Ticket DESC";
+                }
+                else if (TipoFact == "TA")
+                {
+                    textTipoFact = "el Ticket Abono";
+                    sqlSiguenteNumFact = "SELECT TOP 1 VEN_Ticket + 1 AS nextTicketAbono FROM VENDA WHERE VEN_Tienda = " + tienda + " AND YEAR(VEN_Data) = '" + yearFact + "' AND VEN_Referencia = 'ABONO' ORDER BY VEN_Ticket DESC";
+                }
 
-            }
-            else
-            {
-                consultaSQLventa = "UPDATE VENDA SET VEN_Ticket =?, VEN_DataTicket =?, VEN_DataDoc =? WHERE VEN_Codi = " + ventaNumero + " AND VEN_Tienda = " + tienda;
+                //=====================OBTENER EL VEN_NumFactura DE LA RESPUESTA QUE NOS ARROJA LA API=====================
+                if (VEN_CodiFactSent == ventaNumero)
+                {
+                    siguenteNumFact = txtFactura.Text;
+                }
+                else
+                {
+                    siguenteNumFact = Conection.SelectOnce(sqlSiguenteNumFact);
+                }
+                
+                int.TryParse(siguenteNumFact, out numFacturaOld);
 
-            }
+                string consultaSQLventa = "";
 
-            using (cmd2 = new System.Data.Odbc.OdbcCommand())
-            {
-                cmd2.CommandText = consultaSQLventa;
-                System.Data.Odbc.OdbcParameter paramVEN_NumFactura = new System.Data.Odbc.OdbcParameter();
-                paramVEN_NumFactura.OdbcType = System.Data.Odbc.OdbcType.Int;
-                paramVEN_NumFactura.Value = numFacturaOld;
-                cmd2.Parameters.Add(paramVEN_NumFactura);
                 if (TipoFact == "F" || TipoFact == "FA")
                 {
-                    System.Data.Odbc.OdbcParameter paramVEN_Factura = new System.Data.Odbc.OdbcParameter();
-                    paramVEN_Factura.OdbcType = System.Data.Odbc.OdbcType.Text;
-                    paramVEN_Factura.Value = "S";
-                    cmd2.Parameters.Add(paramVEN_Factura);
+
+                    consultaSQLventa = "UPDATE VENDA SET VEN_NumFactura =?, VEN_Factura =?, VEN_DataFactura =?, VEN_DataDoc =? WHERE VEN_Codi = " + ventaNumero + " AND VEN_Tienda = " + tienda;
+
                 }
-                System.Data.Odbc.OdbcParameter paramVEN_DataFactura = new System.Data.Odbc.OdbcParameter();
-                paramVEN_DataFactura.OdbcType = System.Data.Odbc.OdbcType.Date;
-                paramVEN_DataFactura.Value = dataFactura;
-                cmd2.Parameters.Add(paramVEN_DataFactura);
-                System.Data.Odbc.OdbcParameter paramVEN_DataDoc = new System.Data.Odbc.OdbcParameter();
-                paramVEN_DataDoc.OdbcType = System.Data.Odbc.OdbcType.Date;
-                paramVEN_DataDoc.Value = dataFactura;
-                cmd2.Parameters.Add(paramVEN_DataDoc);
-                Conection.ExecuteCommand(cmd2);
+                else
+                {
+                    consultaSQLventa = "UPDATE VENDA SET VEN_Ticket =?, VEN_DataTicket =?, VEN_DataDoc =? WHERE VEN_Codi = " + ventaNumero + " AND VEN_Tienda = " + tienda;
+
+                }
+
+                using (cmd2 = new System.Data.Odbc.OdbcCommand())
+                {
+                    cmd2.CommandText = consultaSQLventa;
+                    System.Data.Odbc.OdbcParameter paramVEN_NumFactura = new System.Data.Odbc.OdbcParameter();
+                    paramVEN_NumFactura.OdbcType = System.Data.Odbc.OdbcType.Int;
+                    paramVEN_NumFactura.Value = numFacturaOld;
+                    cmd2.Parameters.Add(paramVEN_NumFactura);
+                    if (TipoFact == "F" || TipoFact == "FA")
+                    {
+                        System.Data.Odbc.OdbcParameter paramVEN_Factura = new System.Data.Odbc.OdbcParameter();
+                        paramVEN_Factura.OdbcType = System.Data.Odbc.OdbcType.Text;
+                        paramVEN_Factura.Value = "S";
+                        cmd2.Parameters.Add(paramVEN_Factura);
+                    }
+                    System.Data.Odbc.OdbcParameter paramVEN_DataFactura = new System.Data.Odbc.OdbcParameter();
+                    paramVEN_DataFactura.OdbcType = System.Data.Odbc.OdbcType.Date;
+                    paramVEN_DataFactura.Value = dataFactura;
+                    cmd2.Parameters.Add(paramVEN_DataFactura);
+                    System.Data.Odbc.OdbcParameter paramVEN_DataDoc = new System.Data.Odbc.OdbcParameter();
+                    paramVEN_DataDoc.OdbcType = System.Data.Odbc.OdbcType.Date;
+                    paramVEN_DataDoc.Value = dataFactura;
+                    cmd2.Parameters.Add(paramVEN_DataDoc);
+                    Conection.ExecuteCommand(cmd2);
+                }
+            }
+            else
+            {
+                var sqlNumFactCancelada = "SELECT VEN_NumFactura FROM FACTURAS_HACIENDA_AUTO where TBAI_Id = '" + chainInfoNumber + "'";
+
+                siguenteNumFact = Conection.SelectOnce(sqlNumFactCancelada);
+
+                int.TryParse(siguenteNumFact, out numFacturaOld);
             }
 
             using (var cmdInsert = new System.Data.Odbc.OdbcCommand())
@@ -1302,14 +1298,15 @@ namespace VeriFactu
                         cmdInsert.CommandText = @"
                                         INSERT INTO FACTURAS_HACIENDA_AUTO 
                                         (FACT_Codi, FACT_Tienda, FACT_Tipo, VEN_NumFactura, VEN_DataFactura, 
-                                         TBAI_Codi, TBAI_Id, TBAI_Qr, TBAI_Url, TBAI_Queue, 
-                                         TBAI_Xml, TBAI_ImgQr, TBAI_Data, TBAI_Hash, TBAI_Estado, TBAI_mensaje)
-                                        VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                                         TBAI_Codi, TBAI_Id, TBAI_Queue, 
+                                         TBAI_Xml, TBAI_Data, TBAI_Hash, TBAI_UserId, TBAI_Estado, TBAI_mensaje, TBAI_Qr, TBAI_Url, TBAI_ImgQr)
+                                        VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         cmdInsert.Parameters.AddWithValue("@FACT_Tienda", tienda);
                         cmdInsert.Parameters.AddWithValue("@FACT_Tipo", TipoFact);
                         cmdInsert.Parameters.AddWithValue("@VEN_NumFactura", numFacturaOld);
                         cmdInsert.Parameters.AddWithValue("@VEN_DataFactura", dataFactura);
                     }
+                        
                 }
                 else
                 {
@@ -1322,9 +1319,9 @@ namespace VeriFactu
                         cmdInsert.CommandText = @"
                                     INSERT INTO FACTURAS_HACIENDA_AUTO 
                                     (FACT_Codi, FACT_Tienda, FACT_Tipo, VEN_Ticket, VEN_DataTicket, 
-                                     TBAI_Codi, TBAI_Id, TBAI_Qr, TBAI_Url, TBAI_Queue, 
-                                     TBAI_Xml, TBAI_ImgQr, TBAI_Data, TBAI_Hash, TBAI_Estado, TBAI_mensaje)
-                                    VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                                     TBAI_Codi, TBAI_Id, TBAI_Queue, 
+                                     TBAI_Xml, TBAI_Data, TBAI_Hash, TBAI_UserId, TBAI_Estado, TBAI_mensaje, TBAI_Qr, TBAI_Url, TBAI_ImgQr)
+                                    VALUES (NULL, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
                         cmdInsert.Parameters.AddWithValue("@FACT_Tienda", tienda);
                         cmdInsert.Parameters.AddWithValue("@FACT_Tipo", TipoFact);
                         cmdInsert.Parameters.AddWithValue("@VEN_Ticket", numFacturaOld);
@@ -1335,34 +1332,45 @@ namespace VeriFactu
 
                 // Comunes a ambos tipos
 
-                filename2 = createImageQr(old_factura.qrcode, tbai_codifactura, txtTienda.Text);
-                pictureBox1.Image = Image.FromFile(filename2);
-                string sPathToFileToSave2 = filename2;
+                cmdInsert.Parameters.AddWithValue("@TBAI_Codi", TBAI_CodiOld);
+                cmdInsert.Parameters.AddWithValue("@TBAI_Id", old_factura.chainInfo.number);
+                cmdInsert.Parameters.AddWithValue("@TBAI_Queue", old_factura.queueId);
+                cmdInsert.Parameters.AddWithValue("@TBAI_Xml", old_factura.verifactuXml);
+                cmdInsert.Parameters.AddWithValue("@TBAI_Data", dataFactura);
+                cmdInsert.Parameters.AddWithValue("@TBAI_Hash", old_factura.chainInfo.hash);
+                cmdInsert.Parameters.AddWithValue("@TBAI_UserId", old_factura.chainInfo.issuerIrsId);
 
-                using (System.IO.FileStream fs2 = new System.IO.FileStream(sPathToFileToSave2, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                if (!string.IsNullOrEmpty(old_factura.qrcode))
+                { 
+                
+                    filename2 = createImageQr(old_factura.qrcode, tbai_codifactura, txtTienda.Text);
+                    pictureBox1.Image = Image.FromFile(filename2);
+                    string sPathToFileToSave2 = filename2;
+
+                    using (System.IO.FileStream fs2 = new System.IO.FileStream(sPathToFileToSave2, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+                    {
+                        byte[] fileData = new byte[fs2.Length];
+                        fs2.Read(fileData, 0, System.Convert.ToInt32(fs2.Length));
+                        fs2.Close();
+                        cmdInsert.Parameters.AddWithValue("@TBAI_Estado", "En cola");
+                        cmdInsert.Parameters.AddWithValue("@TBAI_mensaje", "Factura insertada correctamente");
+                        cmdInsert.Parameters.AddWithValue("@TBAI_Qr", old_factura.qrcode);
+                        cmdInsert.Parameters.AddWithValue("@TBAI_Url", old_factura.verifactuUrl);
+                        cmdInsert.Parameters.AddWithValue("@TBAI_ImgQr", fileData);
+                    }
+                }
+                else
                 {
-                    byte[] fileData = new byte[fs2.Length];
-                    fs2.Read(fileData, 0, System.Convert.ToInt32(fs2.Length));
-                    fs2.Close();
-
-                    cmdInsert.Parameters.AddWithValue("@TBAI_Codi", TBAI_CodiOld);
-                    cmdInsert.Parameters.AddWithValue("@TBAI_Id", old_factura.tbaiId);
-                    cmdInsert.Parameters.AddWithValue("@TBAI_Qr", old_factura.qrcode);
-                    cmdInsert.Parameters.AddWithValue("@TBAI_Url", old_factura.tbaiUrl);
-                    cmdInsert.Parameters.AddWithValue("@TBAI_Queue", old_factura.queueId);
-                    cmdInsert.Parameters.AddWithValue("@TBAI_Xml", old_factura.tbaiXml);
-                    cmdInsert.Parameters.AddWithValue("@TBAI_ImgQr", fileData);
-                    cmdInsert.Parameters.AddWithValue("@TBAI_Data", dataFactura);
-                    cmdInsert.Parameters.AddWithValue("@TBAI_Hash", old_factura.chainInfo.hash);
-                    cmdInsert.Parameters.AddWithValue("@TBAI_Estado", "En cola");
-                    cmdInsert.Parameters.AddWithValue("@TBAI_mensaje", "Factura insertada correctamente");
+                    cmdInsert.Parameters.AddWithValue("@TBAI_Estado", "Cancelada");
+                    cmdInsert.Parameters.AddWithValue("@TBAI_mensaje", "Factura cancelada correctamente");
+                    cmdInsert.Parameters.AddWithValue("@TBAI_Qr", "NULL");
+                    cmdInsert.Parameters.AddWithValue("@TBAI_Url", "NULL");
+                    cmdInsert.Parameters.AddWithValue("@TBAI_ImgQr", "NULL");
                 }
 
                 Conection.ExecuteCommand(cmdInsert);
+
             }
-
-
-            //<TargetFramework>net8.0-windows7.0</TargetFramework>
 
 
             MessageBox.Show("No estaba registrado en la Base de Datos " + textTipoFact + " Nº " + numFacturaOld + " del cliente " + nombreCli + " y con fecha " + dataFactura + ". Hemos realizado su registro");

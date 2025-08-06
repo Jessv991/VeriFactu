@@ -29,6 +29,7 @@ namespace VeriFactu
             public string issuedTime { get; set; }
             public string number { get; set; }
             public string hash { get; set; }
+            public string serie { get; set; }
         }
 
         public class FacturaState
