@@ -1,4 +1,5 @@
 using System.Data.SqlTypes;
+using System.Windows.Forms;
 using static System.ComponentModel.Design.ObjectSelectorEditor;
 
 namespace VeriFactu
@@ -23,6 +24,7 @@ namespace VeriFactu
 
             if (TicketBai_Tipo == "VERIFACTU") {
 
+                //MessageBox.Show("Entró a verifactu");
                 VeriFactu form = new VeriFactu();
 
                 if (args.Length >= 3)
@@ -45,6 +47,7 @@ namespace VeriFactu
             }
             else if (TicketBai_Tipo == "TICKETBAI")
             {
+                //MessageBox.Show("Entró a ticketbai");
                 TicketBai form = new TicketBai();
 
                 if (args.Length >= 3)
