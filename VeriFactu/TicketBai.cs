@@ -315,7 +315,7 @@ namespace VeriFactu
                                         "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
                                         "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) " +
                                         "AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
-                                        "GROUP BY v.VEN_ImportTotal,v.VEN_Codi,v.VEN_Tienda,lv.LVN_Codi,LV.LVN_SUBTOTAL,c.CLI_Codi,c.CLI_Dni, c.CLI_Nom,c.CLI_Cognom1,c.CLI_Cognom2, c.CLI_CodiPostal,C.CLI_NumEdif, C.CLI_Piso,C.CLI_Puerta,C.CLI_Escalera, C.CLI_Domicili, lv.PRD_Item, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_DefAuditiu, c.CLI_EstatCivil ORDER BY LVN_Codi";
+                                        " GROUP BY v.VEN_ImportTotal,v.VEN_Codi,v.VEN_Tienda,lv.LVN_Codi,LV.LVN_SUBTOTAL,c.CLI_Codi,c.CLI_Dni, c.CLI_Nom,c.CLI_Cognom1,c.CLI_Cognom2, c.CLI_CodiPostal,C.CLI_NumEdif, C.CLI_Piso,C.CLI_Puerta,C.CLI_Escalera, C.CLI_Domicili, lv.PRD_Item, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_DefAuditiu, c.CLI_EstatCivil ORDER BY LVN_Codi";
 
 
             sql_recargoEquivalenciaCliente = "SELECT CLI_RecEquivalencia " +
@@ -324,14 +324,14 @@ namespace VeriFactu
                                         "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
                                         "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
                                         "AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
-                                        "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) ";
+                                        " AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) ";
             descripcion = "Factura ";
 
             sql_getVenImportTotal = "SELECT SUM(v.VEN_ImportTotal) FROM VENDA v WHERE v.VEN_NumFactura = '" + txtFactura.Text + "' " +
                           "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
                           "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
                           "AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
-                          "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) ";
+                          " AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) ";
 
             //================DATOS DEL CLIENTE================
 
@@ -376,7 +376,6 @@ namespace VeriFactu
             }
             else
             {
-
                 //MessageBox.Show("No se puede crear factura duplicada");
                 System.Windows.Forms.Application.Exit();
             }
@@ -398,7 +397,7 @@ namespace VeriFactu
                                        "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
                                        "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
                                        "AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
-                                       "AND v.VEN_Referencia = 'ABONO' " +
+                                       " AND v.VEN_Referencia = 'ABONO' " +
                                        "GROUP BY v.VEN_ImportTotal,v.VEN_Codi,v.VEN_Tienda,lv.LVN_Codi,LV.LVN_SUBTOTAL,c.CLI_Codi,c.CLI_Dni, c.CLI_Nom,c.CLI_Cognom1,c.CLI_Cognom2, c.CLI_CodiPostal,C.CLI_NumEdif, C.CLI_Piso,C.CLI_Puerta,C.CLI_Escalera, C.CLI_Domicili, lv.PRD_Item, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_DefAuditiu, c.CLI_EstatCivil ORDER BY LVN_Codi";
 
             sql_getVenFactAbono = "SELECT VEN_ImportBrut FROM VENDA WHERE VEN_NumFactura = '" + txtFactura.Text + "' " + "AND VEN_Tienda = '" + txtTienda.Text + "' " + "AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' " + "AND VEN_Referencia = 'ABONO' AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion;
@@ -411,7 +410,7 @@ namespace VeriFactu
                                        "INNER JOIN FACTURAS_HACIENDA_AUTO FHA ON (FHA.VEN_NumFactura = V.VEN_NumFactura AND V.VEN_DataFactura = FHA.VEN_DataFactura) WHERE " +
                                        "V.VEN_Codi = '" + subs[0] + "' " +
                                        "AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
-                                       "AND V.VEN_Tienda = '" + subs[1].Substring(0, 2) + "'";
+                                       " AND V.VEN_Tienda = '" + subs[1].Substring(0, 2) + "'";
             ven_abono = Conection.SelectRows(sql_getFechaVentaAbono);
 
             if (ven_abono == null || ven_abono.Rows.Count == 0)
@@ -433,7 +432,7 @@ namespace VeriFactu
                     "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
                     "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
                     "AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
-                    "AND v.VEN_Referencia = 'ABONO'";
+                    " AND v.VEN_Referencia = 'ABONO'";
 
             descripcion = "Factura Abono ";
 
@@ -441,7 +440,7 @@ namespace VeriFactu
                                              "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
                                              "AND YEAR(v.VEN_DataFactura) = '" + txtYear.Text + "' " +
                                              "AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
-                                             "AND v.VEN_Referencia = 'ABONO'";
+                                             " AND v.VEN_Referencia = 'ABONO'";
 
 
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
@@ -504,7 +503,7 @@ namespace VeriFactu
                                       "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
                                       "AND YEAR(v.VEN_DataTicket) = '" + txtYear.Text + "' " +
                                       "AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
-                                      "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) " +
+                                      " AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) " +
                                       "GROUP BY v.VEN_ImportTotal,v.VEN_Codi,v.VEN_Tienda,lv.LVN_Codi,LV.LVN_SUBTOTAL,c.CLI_Dni, c.CLI_Nom,c.CLI_Cognom1,c.CLI_Cognom2, c.CLI_CodiPostal,C.CLI_NumEdif, C.CLI_Piso,C.CLI_Puerta,C.CLI_Escalera, C.CLI_Domicili, lv.PRD_Item, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_DefAuditiu, c.CLI_EstatCivil ORDER BY LVN_Codi";
             factura_a_cliente = "N";
 
@@ -514,7 +513,7 @@ namespace VeriFactu
                                        "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
                                        "AND YEAR(v.VEN_DataTicket) = '" + txtYear.Text + "' " +
                                        "AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
-                                       "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) ";
+                                       " AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) ";
 
             descripcion = "Ticket ";
 
@@ -522,7 +521,7 @@ namespace VeriFactu
                                             "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
                                             "AND YEAR(v.VEN_DataTicket) = '" + txtYear.Text + "' " +
                                             "AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
-                                            "AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) ";
+                                            " AND (v.VEN_Referencia <> 'ABONO' OR v.VEN_Referencia is null) ";
 
 
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
@@ -570,7 +569,7 @@ namespace VeriFactu
                                       "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
                                       "AND YEAR(v.VEN_DataTicket) = '" + txtYear.Text + "' " +
                                       "AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
-                                      "AND v.VEN_Referencia = 'ABONO' " +
+                                      " AND v.VEN_Referencia = 'ABONO' " +
                                       "GROUP BY v.VEN_ImportTotal,v.VEN_Codi,v.VEN_Tienda,lv.LVN_Codi,LV.LVN_SUBTOTAL,c.CLI_Dni, c.CLI_Nom,c.CLI_Cognom1,c.CLI_Cognom2, c.CLI_DefAuditiu, c.CLI_CodiPostal,C.CLI_NumEdif, C.CLI_Piso,C.CLI_Puerta,C.CLI_Escalera, C.CLI_Domicili, lv.PRD_Item, lv.LVN_PreuUnitat , lv.LVN_Uds, lv.LVN_Desconte, lv.LVN_IVA, v.VEN_Data, v.VEN_Hora, VEN_DataFactura, Ven_DataTicket, c.CLI_DefAuditiu, c.CLI_EstatCivil ORDER BY LVN_Codi";
 
             factura_a_cliente = "N";
@@ -580,7 +579,7 @@ namespace VeriFactu
                                         "v.VEN_Ticket = '" + txtFactura.Text + "' " +
                                         "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
                                         "AND YEAR(v.VEN_DataTicket) = '" + txtYear.Text + "' " +
-                                        "AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
+                                        " AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
                                         "AND v.VEN_Referencia = 'ABONO'";
 
             descripcion = "Ticket Abono ";
@@ -589,13 +588,13 @@ namespace VeriFactu
                                              "AND v.VEN_Tienda = '" + txtTienda.Text + "' " +
                                              "AND YEAR(v.VEN_DataTicket) = '" + txtYear.Text + "' " +
                                              "AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
-                                              "AND v.VEN_Referencia = 'ABONO'";
+                                              " AND v.VEN_Referencia = 'ABONO'";
 
             sql_getVenFactAbono = "SELECT VEN_ImportBrut FROM VENDA WHERE VEN_Ticket = '" + txtFactura.Text + "' " +
                                        "AND VEN_Tienda = '" + txtTienda.Text + "' " +
                                        "AND YEAR(VEN_DataTicket) = '" + txtYear.Text + "' " +
                                        "AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
-                                       "AND VEN_Referencia = 'ABONO'";
+                                       " AND VEN_Referencia = 'ABONO'";
 
 
 
@@ -611,7 +610,7 @@ namespace VeriFactu
                                    "INNER JOIN FACTURAS_HACIENDA_AUTO FHA ON (FHA.VEN_Ticket = V.VEN_Ticket AND V.VEN_DataTicket = FHA.VEN_DataTicket) WHERE " +
                                    "V.VEN_Codi = '" + subs[0] + "' " +
                                    "AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
-                                   "AND V.VEN_Tienda = '" + subs[1].Substring(0, 2) + "'";
+                                   " AND V.VEN_Tienda = '" + subs[1].Substring(0, 2) + "'";
 
                 ven_abono = Conection.SelectRows(sql_getFechaVentaAbono);
 
