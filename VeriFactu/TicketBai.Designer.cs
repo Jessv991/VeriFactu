@@ -128,6 +128,7 @@
             txtReenvio.Name = "txtReenvio";
             txtReenvio.Size = new Size(108, 23);
             txtReenvio.TabIndex = 20;
+            txtReenvio.TextChanged += txtReenvio_TextChanged;
             // 
             // txtJson
             // 
