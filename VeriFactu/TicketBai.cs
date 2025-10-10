@@ -1328,8 +1328,8 @@ namespace VeriFactu
                                 )
                                 ) AS INT) AS NextQueueValue";
 
-            //string TBAI_Queue = Conection.SelectOnce(sql_maxTbaiQueue);
-            string TBAI_Queue = "400";
+            string TBAI_Queue = Conection.SelectOnce(sql_maxTbaiQueue);
+            //string TBAI_Queue = "400";
 
             var client2 = new RestClient(new RestClientOptions(TicketBai_DB.Trim())
             {
