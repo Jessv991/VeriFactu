@@ -2,7 +2,7 @@
   "profiles": {
     "VeriFactu": {
       "commandName": "Project",
-      "commandLineArgs": "FAMS 7 1 2025"
+      "commandLineArgs": "F 2 298 2025"
     }
   }
 }

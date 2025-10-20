@@ -51,6 +51,14 @@ namespace VeriFactu
             public string issuedTime { get; set; }
 
         }
+        
+        public class Invoice_id_Substitution
+        {
+            public string number { get; set; }
+            public string serie { get; set; }
+            public string issuedTime { get; set; }
+
+        }
         public class Description
         {
             public string text { get; set; }
@@ -92,8 +100,9 @@ namespace VeriFactu
             public List<Line> lines { get; set; }
             public List<VatLine> vatLines { get; set; }
             public Decimal total { get; set; }
-
             public string[] vatKeys = new string[1];
+            public bool replacesTicket { get; set; }
+            public List<Invoice_id_Substitution> replacedTicketIds { get; set; }
         }
 
         public class Issuer//datos del emisor de la factura

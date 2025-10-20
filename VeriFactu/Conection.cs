@@ -64,6 +64,11 @@ namespace VeriFactu
                             int temp = reader.GetInt32(0);
                             resultado = temp.ToString();  // Convertir el entero a string
                         }
+                        else if (fieldType == typeof(DateTime))
+                        {
+                            DateTime temp = reader.GetDateTime(0);
+                            resultado = temp.ToString("yyyy/MM/dd"); // o "yyyy-MM-dd", según lo que necesites
+                        }
                         else
                         {
                             resultado = reader.GetString(0); // Leer como string si es un string

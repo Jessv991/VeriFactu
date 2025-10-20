@@ -104,7 +104,9 @@ namespace VeriFactu
 
         static Decimal total_neto_21 = 0;
         static Decimal total_neto_10 = 0;
+        static Decimal total_neto_7 = 0;
         static Decimal total_neto_4 = 0;
+        static Decimal total_neto_3 = 0;
         static Decimal total_neto_0 = 0;
         static Decimal total_neto = 0;
         static Decimal totalAmountWithVat = 0;
@@ -371,7 +373,7 @@ namespace VeriFactu
 
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
 
-            if (string.IsNullOrEmpty(checkIfExist) || txtReenvio.Text == "R")
+            if (string.IsNullOrEmpty(checkIfExist) || txtReenvio.Text == "R" || txtReenvio.Text == "S" || txtReenvio.Text == "D")
             {
 
                 ImportTotalString = Conection.SelectOnce(sql_getVenImportTotal).Replace(".", ",");
@@ -392,7 +394,7 @@ namespace VeriFactu
                     System.Windows.Forms.Application.Exit();
                 }
 
-                if ((ImporTotalCheck > importe_minimo))
+                if ((ImporTotalCheck > importe_minimo) || txtReenvio.Text == "S" || txtReenvio.Text == "D")
                 {
                     this.datosCliente();
                 }
@@ -477,7 +479,7 @@ namespace VeriFactu
 
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
 
-            if (string.IsNullOrEmpty(checkIfExist) || txtReenvio.Text == "R")
+            if (string.IsNullOrEmpty(checkIfExist) || txtReenvio.Text == "R" || txtReenvio.Text == "S" || txtReenvio.Text == "D")
             {
 
                 ImportTotalString = Conection.SelectOnce(sql_getVenImportTotal).Replace(".", ",");
@@ -499,7 +501,7 @@ namespace VeriFactu
                 }
 
                 //================DATOS DEL CLIENTE================
-                if ((ImporTotalCheck > importe_minimo))
+                if ((ImporTotalCheck > importe_minimo) || txtReenvio.Text == "S" || txtReenvio.Text == "D")
                 {
                     InvoiceArray.type = "R1";
                     this.buildCreditNote();
@@ -864,6 +866,9 @@ namespace VeriFactu
 
             //=====================VATLINE (VatLine de factura)
 
+            string slq_Iscanarias = "SELECT PAR_Valor FROM LISTA_PARAMETROS WHERE PAR_Key = 'Escanarias'";
+            string Iscanarias = Conection.SelectOnce(slq_Iscanarias); ;
+
             //vatLineArray.@base = 0;
 
             foreach (DataRow row in vendaTable.Rows)
@@ -891,8 +896,14 @@ namespace VeriFactu
                     case 10:
                         total_neto_10 += precio_linea_sin_iva_con_dto;
                         break;
+                    case 7:
+                        total_neto_7 += precio_linea_sin_iva_con_dto;
+                        break;
                     case 4:
                         total_neto_4 += precio_linea_sin_iva_con_dto;
+                        break;
+                    case 3:
+                        total_neto_3 += precio_linea_sin_iva_con_dto;
                         break;
                     case 0:
                         total_neto_0 += precio_linea_sin_iva_con_dto;
@@ -969,6 +980,24 @@ namespace VeriFactu
                 InvoiceArray.vatLines.Add(vatLine10);
             }
 
+            if ((total_neto_7 > 0) || (total_neto_7 < 0))
+            {
+                var vatLine7 = new VatLine
+                {
+                    @base = Math.Round(total_neto_7, 2),
+                    rate = 7,
+                    amount = Math.Round(total_neto_7 * Convert.ToDecimal(0.07), 2),
+                    vatOperation = "S1",
+
+                };
+                //vatLine4.isUsingSimplifiedRegime = true;
+                total += vatLine7.@base + vatLine7.amount;
+                totalAmount += vatLine7.amount;
+                vatLine7.vatKey = "08";
+
+                InvoiceArray.vatLines.Add(vatLine7);
+            }
+            
             if ((total_neto_4 > 0) || (total_neto_4 < 0))
             {
                 var vatLine4 = new VatLine
@@ -999,6 +1028,24 @@ namespace VeriFactu
                 InvoiceArray.vatLines.Add(vatLine4);
             }
 
+            if ((total_neto_3 > 0) || (total_neto_3 < 0))
+            {
+                var vatLine3 = new VatLine
+                {
+                    @base = Math.Round(total_neto_3, 2),
+                    rate = 3,
+                    amount = Math.Round(total_neto_3 * Convert.ToDecimal(0.03), 2),
+                    vatOperation = "S1",
+
+                };
+                //vatLine4.isUsingSimplifiedRegime = true;
+                total += vatLine3.@base + vatLine3.amount;
+                totalAmount += vatLine3.amount;
+                vatLine3.vatKey = "08";
+
+                InvoiceArray.vatLines.Add(vatLine3);
+            }
+
             if ((total_neto_0 > 0) || (total_neto_0 < 0))
             {
                 var vatLine0 = new VatLine
@@ -1008,7 +1055,7 @@ namespace VeriFactu
                     rate = 0,
                     vatOperation = "E1",
                 };
-                if (recargo_equivalencia_empresa == "S")
+                if (recargo_equivalencia_empresa == "S" && Iscanarias == "N")
                 {
                     vatLine0.isUsingSimplifiedRegime = true;
                 }
@@ -1016,13 +1063,20 @@ namespace VeriFactu
                 total += vatLine0.@base + vatLine0.amount;
                 totalAmount += vatLine0.amount;
 
-                if (recargo_equivalencia_empresa == "S")
+                if (recargo_equivalencia_empresa == "S" && Iscanarias == "N")
                 {
                     vatLine0.vatKey = "18";
                 }
                 else
                 {
-                    vatLine0.vatKey = "01";
+                    if (Iscanarias == "N")
+                    {
+                        vatLine0.vatKey = "01";
+                    }
+                    else
+                    {
+                        vatLine0.vatKey = "08";
+                    }
                 }
 
                 InvoiceArray.vatLines.Add(vatLine0);
@@ -1299,11 +1353,13 @@ namespace VeriFactu
             DateTime fechaOldFact = DateTime.Parse(dataFacturaOld);
             string dataFactura = fechaOldFact.ToString("yyyy-MM-dd");
 
+            string AlertMessage = string.Empty;
+
             //=====================OBTENER EL TBAI_Codi DE LA RESPUESTA QUE NOS ARROJA LA API=====================
             var chainInfoNumber = old_factura.chainInfo.number;
             var matchTipoFact = Regex.Match(chainInfoNumber, @"\b([FT][A-Z]{0,3})\/", RegexOptions.IgnoreCase);
-            var matchTBAI_CodiOld = Regex.Match(chainInfoNumber, @"\b((F|T)[A-Z]?[A-Z]?(A)?)\/(\d+)\/", RegexOptions.IgnoreCase);
-            var matchTienda = Regex.Match(chainInfoNumber, @"\b((F|T)[A-Z]?[A-Z]?(A)?)\/\d+/(\d+)\/", RegexOptions.IgnoreCase);
+            var matchTBAI_CodiOld = Regex.Match(chainInfoNumber, @"\b((F|T)(A)?[A-Z]?[A-Z]?)\/(\d+)\/", RegexOptions.IgnoreCase);
+            var matchTienda = Regex.Match(chainInfoNumber, @"\b((F|T)(A)?[A-Z]?[A-Z]?)\/\d+/(\d+)\/", RegexOptions.IgnoreCase);
             var matchYearFact = Regex.Match(chainInfoNumber, @"[FT][A-Z]{0,3}\/\d+\/\d+\/(\d{4})", RegexOptions.IgnoreCase);
 
 
@@ -1317,27 +1373,27 @@ namespace VeriFactu
                 yearFact = matchYearFact.Groups[1].Value.Trim();
             }
 
-            if (TipoFact.Length == 4 && TipoFact.EndsWith("A"))
+            if (TipoFact.Length == 2 && !TipoFact.EndsWith("A"))
             {
-                // Ej: FHA -> FA, TJA -> TA
-                TipoFact2 = TipoFact[0].ToString() + TipoFact[3].ToString();
+                // Ej: FH -> F, TJ -> T
+                TipoFact2 = TipoFact[0].ToString();
             }
             if (TipoFact.Length == 3)
             {
                 // Ej: FHA -> FA, TJA -> TA
-                if (TipoFact.EndsWith("A"))
+                if (TipoFact[1].ToString() == "A")
                 {
-                    TipoFact2 = TipoFact[0].ToString() + TipoFact[2].ToString();
+                    TipoFact2 = TipoFact[0].ToString() + TipoFact[1].ToString();
                 }
                 else
                 {
                     TipoFact2 = TipoFact[0].ToString();
                 }
             }
-            else if (TipoFact.Length == 2 && !TipoFact.EndsWith("A"))
+            else if (TipoFact.Length == 4)
             {
-                // Ej: FH -> F, TJ -> T
-                TipoFact2 = TipoFact[0].ToString();
+                // Ej: FHA -> FA, TJA -> TA
+                TipoFact2 = TipoFact[0].ToString() + TipoFact[1].ToString();
             }
             else
             {
@@ -1434,6 +1490,8 @@ namespace VeriFactu
                     cmd2.Parameters.Add(paramVEN_DataDoc);
                     Conection.ExecuteCommand(cmd2);
                 }
+
+                AlertMessage = "No estaba registrado en la Base de Datos " + textTipoFact + " Nº " + numFacturaOld + " del cliente " + nombreCli + " y con fecha " + dataFactura + ". Hemos realizado su registro";
             }
             else
             {
@@ -1442,6 +1500,8 @@ namespace VeriFactu
                 siguenteNumFact = Conection.SelectOnce(sqlNumFactCancelada);
 
                 int.TryParse(siguenteNumFact, out numFacturaOld);
+
+                AlertMessage = "No se encontraba registrada en nuestra base de datos una factura cancelada.";
             }
 
             using (var cmdInsert = new System.Data.Odbc.OdbcCommand())
@@ -1533,7 +1593,7 @@ namespace VeriFactu
             }
 
 
-            MessageBox.Show("No estaba registrado en la Base de Datos " + textTipoFact + " Nº " + numFacturaOld + " del cliente " + nombreCli + " y con fecha " + dataFactura + ". Hemos realizado su registro");
+            MessageBox.Show(AlertMessage);
 
             if (VEN_CodiFactSent == ventaNumero)
             {
