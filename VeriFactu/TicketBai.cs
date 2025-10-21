@@ -403,7 +403,7 @@ namespace VeriFactu
                 if ((ImporTotalCheck > importe_minimo) || txtReenvio.Text == "S" || txtReenvio.Text == "D")
                 {
                     sqlTBAI_Simple = "N";
-                    this.sameSQLTicket();
+                    this.sameSQLFacturas();
                     this.datosCliente();
                 }
                 else
@@ -512,7 +512,7 @@ namespace VeriFactu
                 if ((ImporTotalCheck >= importe_minimo) || txtReenvio.Text == "S" || txtReenvio.Text == "D")
                 {
                     sqlTBAI_Simple = "N";
-                    this.sameSQLTicket();
+                    this.sameSQLFacturas();
                     this.datosCliente();
                     CreditNoteArray.reason = "R1";
                 }
