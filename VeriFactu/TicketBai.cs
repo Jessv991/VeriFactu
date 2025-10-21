@@ -157,7 +157,7 @@ namespace VeriFactu
 
             //=====================CONSULTA PARA OBTENER ISSURE=======================================
 
-            sql_datosIssureTienda = "SELECT (SELECT PAR_Valor FROM TIENDADATOS WHERE PAR_Key = 'NIF' AND TIE_Codigo = " + txtTienda.Text + ") AS NIF, (SELECT PAR_Valor FROM indo.TIENDADATOS WHERE PAR_Key = 'RegMercantil' AND TIE_Codigo = " + txtTienda.Text + ") AS RegMercantil;";
+            sql_datosIssureTienda = "SELECT (SELECT PAR_Valor FROM TIENDADATOS WHERE PAR_Key = 'TicketBai_NIF' AND TIE_Codigo = " + txtTienda.Text + ") AS TicketBai_NIF, (SELECT PAR_Valor FROM indo.TIENDADATOS WHERE PAR_Key = 'RegMercantil' AND TIE_Codigo = " + txtTienda.Text + ") AS RegMercantil;";
 
             //recargo_equivalencia_cliente = Conection.SelectOnce(sql_recargoEquivalenciaCliente); //consulta para optiner 'recargo_equivalencia_empresa'
 
@@ -403,6 +403,7 @@ namespace VeriFactu
                 if ((ImporTotalCheck > importe_minimo) || txtReenvio.Text == "S" || txtReenvio.Text == "D")
                 {
                     sqlTBAI_Simple = "N";
+                    this.sameSQLTicket();
                     this.datosCliente();
                 }
                 else
@@ -511,6 +512,7 @@ namespace VeriFactu
                 if ((ImporTotalCheck >= importe_minimo) || txtReenvio.Text == "S" || txtReenvio.Text == "D")
                 {
                     sqlTBAI_Simple = "N";
+                    this.sameSQLTicket();
                     this.datosCliente();
                     CreditNoteArray.reason = "R1";
                 }
@@ -833,13 +835,13 @@ namespace VeriFactu
                 System.Windows.Forms.Application.Exit();
             }
 
-            if (datosIssureTiendaTable.Rows[0].Field<string>("NIF").ToString() != null)
+            if (datosIssureTiendaTable.Rows[0].Field<string>("TicketBai_NIF").ToString() != null)
             {
-                IssuerArray.irsId = datosIssureTiendaTable.Rows[0].Field<string>("NIF").ToString();
+                IssuerArray.irsId = datosIssureTiendaTable.Rows[0].Field<string>("TicketBai_NIF").ToString();
             }
             else
             {
-                MessageBox.Show("Error: Falta el NIF de la optica del Cliente");
+                MessageBox.Show("Error: Falta el TicketBai_NIF de la optica del Cliente");
                 System.Windows.Forms.Application.Exit();
             }
 

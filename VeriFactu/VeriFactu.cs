@@ -167,7 +167,7 @@ namespace VeriFactu
 
             //=====================CONSULTA PARA OBTENER ISSURE=======================================
 
-            sql_datosIssureTienda = "SELECT (SELECT PAR_Valor FROM TIENDADATOS WHERE PAR_Key = 'NIF' AND TIE_Codigo = " + txtTienda.Text + ") AS NIF, (SELECT PAR_Valor FROM indo.TIENDADATOS WHERE PAR_Key = 'RegMercantil' AND TIE_Codigo = " + txtTienda.Text + ") AS RegMercantil;";
+            sql_datosIssureTienda = "SELECT (SELECT PAR_Valor FROM TIENDADATOS WHERE PAR_Key = 'TicketBai_NIF' AND TIE_Codigo = " + txtTienda.Text + ") AS TicketBai_NIF, (SELECT PAR_Valor FROM indo.TIENDADATOS WHERE PAR_Key = 'RegMercantil' AND TIE_Codigo = " + txtTienda.Text + ") AS RegMercantil;";
 
             //=========================importe minimo para pasar datos del cliente=========================
 
@@ -819,13 +819,13 @@ namespace VeriFactu
                 System.Windows.Forms.Application.Exit();
             }
 
-            if (datosIssureTiendaTable.Rows[0].Field<string>("NIF").ToString() != null)
+            if (datosIssureTiendaTable.Rows[0].Field<string>("TicketBai_NIF").ToString() != null)
             {
-                IssuerArray.irsId = datosIssureTiendaTable.Rows[0].Field<string>("NIF").ToString();
+                IssuerArray.irsId = datosIssureTiendaTable.Rows[0].Field<string>("TicketBai_NIF").ToString();
             }
             else
             {
-                MessageBox.Show("Error: Falta el NIF de la Optica del Cliente");
+                MessageBox.Show("Error: Falta el TicketBai_NIF de la Optica del Cliente");
                 System.Windows.Forms.Application.Exit();
             }
 
