@@ -884,7 +884,7 @@ namespace VeriFactu
             if (txtReenvio.Text == "S")
             {
                 InvoiceArray.replacedTicketIds = new List<apiTicketBai.Invoice_id_Substitution>();
-                string sql_VEN_DataFactura = "SELECT VEN_DataFactura FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo = '" + txtTipo.Text + "' AND FACT_Tienda = " + txtTienda.Text + " AND VEN_NumFactura = " + txtFactura.Text + "AND TBAI_Simple = 'S' AND YEAR(VEN_DataFactura) = " + txtYear.Text;
+                string sql_VEN_DataFactura = "SELECT VEN_DataFactura FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo = '" + txtTipo.Text + "' AND FACT_Tienda = " + txtTienda.Text + " AND VEN_NumFactura = " + txtFactura.Text + " AND TBAI_Simple = 'S' AND YEAR(VEN_DataFactura) = " + txtYear.Text;
                 string VEN_DataFactura = Conection.SelectOnce(sql_VEN_DataFactura);
                 DateTime fechaFormat2 = DateTime.ParseExact(VEN_DataFactura, "yyyy/MM/dd", CultureInfo.InvariantCulture);
                 string date_formated2 = fechaFormat2.ToString("yyyy-MM-dd");

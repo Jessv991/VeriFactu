@@ -2,6 +2,7 @@
 using System.Data;
 using System.Data.Odbc;
 using System.Drawing;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
@@ -74,6 +75,7 @@ namespace VeriFactu
         static string id_vendafact = System.String.Empty;
         static DataTable ven_abono = new DataTable();
         static DataTable vendaTable = new DataTable();
+        static DataTable dataFactSustitucion = new DataTable();
         static DataTable datosIssureTiendaTable = new DataTable();
         static DateTime date_abo = new DateTime();
         static string date_abo_formated = "";
@@ -98,6 +100,7 @@ namespace VeriFactu
         static apiVerifactu.Description descriptionArray = new apiVerifactu.Description();
         static apiVerifactu.VatLine vatLineArray = new apiVerifactu.VatLine();
         static apiVerifactu.InvoiceId InvoiceIdArray = new apiVerifactu.InvoiceId();
+        static apiVerifactu.replacedTicketIds replacedTicketIdsArray = new apiVerifactu.replacedTicketIds();
         static apiVerifactu.CreditNote CreditNoteArray = new apiVerifactu.CreditNote();
 
         //=============VARIABLES DE TOTAL NETO PARA CALCULAR SEG�N EL VATLINE
@@ -772,7 +775,25 @@ namespace VeriFactu
             //=====================INVOICE=====================
             //=====================type de (type)
 
-            InvoiceArray.type = "F1";
+            if (txtReenvio.Text == "S")
+            {
+                string sql_VEN_DataFactura = "SELECT VEN_DataFactura, TBAI_Id FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo = '" + txtTipo.Text + "' AND FACT_Tienda = " + txtTienda.Text + " AND VEN_NumFactura = " + txtFactura.Text + " AND TBAI_Simple = 'S' AND YEAR(VEN_DataFactura) = " + txtYear.Text;
+                dataFactSustitucion = Conection.SelectRows(sql_VEN_DataFactura);
+                var issuedTime = dataFactSustitucion.Rows[0].Field<DateTime>("VEN_DataFactura");
+                var number = dataFactSustitucion.Rows[0].Field<string>("TBAI_Id");
+                string date_formated2 = issuedTime.ToString("yyyy-MM-dd");
+
+                InvoiceArray.replacedTicketIds = new List<replacedTicketIds>();
+                InvoiceArray.replacesTicket = true;
+                replacedTicketIdsArray.number = number;
+                replacedTicketIdsArray.issuedTime = date_formated2;
+                InvoiceArray.replacedTicketIds.Add(replacedTicketIdsArray);
+                InvoiceArray.type = "F3";
+            }
+            else
+            {
+                InvoiceArray.type = "F1";
+            }
 
             //=====================simple de (simple)
 
@@ -1288,26 +1309,40 @@ namespace VeriFactu
              */
 
             sql_maxTbaiQueue = @"SELECT 
-                                CAST(ISNULL((
-                                    SELECT MIN(f1.TBAI_Queue) + 1
-                                    FROM FACTURAS_HACIENDA_AUTO AS f1
-                                    WHERE 
-                                        (YEAR(f1.ven_dataFactura) = '" + txtYear.Text + "' OR YEAR(f1.ven_dataticket) = '" + txtYear.Text + @"')
-                                        AND f1.FACT_Tienda = '" + txtTienda.Text + @"'
-                                        AND NOT EXISTS (
-                                            SELECT 1
-                                            FROM FACTURAS_HACIENDA_AUTO AS f2
-                                            WHERE f2.TBAI_Queue = f1.TBAI_Queue + 1
-                                            AND (YEAR(f2.ven_dataFactura) = '" + txtYear.Text + "' OR YEAR(f2.ven_dataticket) = '" + txtYear.Text + @"')
-                                            AND f2.FACT_Tienda = '" + txtTienda.Text + @"'
-                                        )
-                                ), 
-                                (SELECT MAX(TBAI_Queue) + 1 
-                                 FROM FACTURAS_HACIENDA_AUTO
-                                 WHERE (YEAR(ven_dataFactura) = '" + txtYear.Text + "' OR YEAR(ven_dataticket) = '" + txtYear.Text + @"')
-                                 AND FACT_Tienda = '" + txtTienda.Text + @"'
-                                )
-                                ) AS INT) AS NextQueueValue";
+                                    CAST(ISNULL((
+                                        SELECT MIN(f1.TBAI_Queue) + 1
+                                        FROM FACTURAS_HACIENDA_AUTO AS f1
+                                        INNER JOIN TIENDADATOS AS t1 
+                                            ON f1.FACT_Tienda = t1.TIE_Codigo 
+                                            AND t1.PAR_Key = 'TicketBai_DB'
+                                        WHERE 
+                                            (YEAR(f1.ven_dataFactura) = '" + txtYear.Text + @"' 
+                                             OR YEAR(f1.ven_dataticket) = '" + txtYear.Text + @"')
+                                            AND t1.PAR_Valor = '" + TicketBai_DB + @"'
+                                            AND NOT EXISTS (
+                                                SELECT 1
+                                                FROM FACTURAS_HACIENDA_AUTO AS f2
+                                                INNER JOIN TIENDADATOS AS t2 
+                                                    ON f2.FACT_Tienda = t2.TIE_Codigo 
+                                                    AND t2.PAR_Key = 'TicketBai_DB'
+                                                WHERE 
+                                                    f2.TBAI_Queue = f1.TBAI_Queue + 1
+                                                    AND (YEAR(f2.ven_dataFactura) = '" + txtYear.Text + @"' 
+                                                         OR YEAR(f2.ven_dataticket) = '" + txtYear.Text + @"')
+                                                    AND t2.PAR_Valor = '" + TicketBai_DB + @"'
+                                            )
+                                    ), 
+                                    (
+                                        SELECT MAX(f3.TBAI_Queue) + 1
+                                        FROM FACTURAS_HACIENDA_AUTO AS f3
+                                        INNER JOIN TIENDADATOS AS t3 
+                                            ON f3.FACT_Tienda = t3.TIE_Codigo 
+                                            AND t3.PAR_Key = 'TicketBai_DB'
+                                        WHERE 
+                                            (YEAR(f3.ven_dataFactura) = '" + txtYear.Text + @"' 
+                                             OR YEAR(f3.ven_dataticket) = '" + txtYear.Text + @"')
+                                            AND t3.PAR_Valor = '" + TicketBai_DB + @"'
+                                    )) AS INT) AS NextQueueValue";
 
 
             string TBAI_Queue = Conection.SelectOnce(sql_maxTbaiQueue);

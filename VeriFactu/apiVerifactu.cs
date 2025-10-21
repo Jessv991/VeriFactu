@@ -21,12 +21,12 @@ namespace VeriFactu
             public Recipient recipient { get; set; } //? Destinatarios
             public Id id { get; set; } // IDFactura
             public string type { get; set; } // TipoFactura
-            public string replacesTicket { get; set; } //? boolean
-            public string replacedTicketIds { get; set; } //? rray<InvoiceId>; FacturasSustituidas
             public CreditNote creditNote { get; set; } //? CreditNoteType; FacturasRectificadas
             public bool simple { get; set; } //? boolean; FacturaSimplificadaArticulos7.2_7.3
             public Description description { get; set; } //? InvoiceDescription; DescripcionOperacion
             public List<VatLine> vatLines { get; set; } //Array<VatLine>; Desglose
+            public bool replacesTicket { get; set; } //? boolean   
+            public List<replacedTicketIds> replacedTicketIds { get; set; } //Array<VatLine>; Desglose
             public Decimal amount { get; set; } //CuotaTotal
             public Decimal total { get; set; } //CuotaTotal
 
@@ -87,6 +87,11 @@ namespace VeriFactu
         {
             //public string serie { get; set; }//la serie es el número para la factura (lleva seri+tienda+factura_abono_year)
             public string number { get; set; }//número de copias
+            public string issuedTime { get; set; }
+        }
+        public class replacedTicketIds//(replacedTicketIds) este es el array para la factura de sustitución
+        {
+            public string number { get; set; }
             public string issuedTime { get; set; }
         }
 

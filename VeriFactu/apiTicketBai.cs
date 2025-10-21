@@ -92,17 +92,17 @@ namespace VeriFactu
         public class Invoice
         {
             public Issuer issuer { get; set; }
-            public Invoice_id id;
-            public CreditNote creditNote;
-            public Description description;
-            public bool simple { get; set; }
             public Recipient recipient;
-            public List<Line> lines { get; set; }
-            public List<VatLine> vatLines { get; set; }
-            public Decimal total { get; set; }
-            public string[] vatKeys = new string[1];
+            public Invoice_id id;
             public bool replacesTicket { get; set; }
             public List<Invoice_id_Substitution> replacedTicketIds { get; set; }
+            public CreditNote creditNote;
+            public bool simple { get; set; }
+            public Description description;
+            public List<VatLine> vatLines { get; set; }
+            public List<Line> lines { get; set; }
+            public Decimal total { get; set; }
+            public string[] vatKeys = new string[1];
         }
 
         public class Issuer//datos del emisor de la factura
