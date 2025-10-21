@@ -1229,6 +1229,11 @@ namespace VeriFactu
                     }
                 }
 
+                if (txtReenvio.Text == "S")
+                {
+                    MessageBox.Show("Factura de sustitución registrada correctamente");
+                }
+
             }
             else
             {
