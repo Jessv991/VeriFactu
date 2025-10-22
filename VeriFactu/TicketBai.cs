@@ -281,7 +281,7 @@ namespace VeriFactu
             else if (tipoProcesado[0] == 'D' || tipoProcesado[0] == 'S')
             {
                 this.deleteOrState();
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
             else
             {
@@ -377,7 +377,7 @@ namespace VeriFactu
 
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
 
-            if (string.IsNullOrEmpty(checkIfExist) || txtReenvio.Text == "R" || txtReenvio.Text == "S" || txtReenvio.Text == "D")
+            if (string.IsNullOrEmpty(checkIfExist) || txtReenvio.Text == "R" || txtReenvio.Text == "S")
             {
 
                 ImportTotalString = Conection.SelectOnce(sql_getVenImportTotal).Replace(".", ",");
@@ -395,12 +395,12 @@ namespace VeriFactu
                 else
                 {
                     MessageBox.Show("Error: Falta el Nombre del Cliente");
-                    System.Windows.Forms.Application.Exit();
+                    Environment.Exit(0);
                 }
 
 
 
-                if ((ImporTotalCheck > importe_minimo) || txtReenvio.Text == "S" || txtReenvio.Text == "D")
+                if ((ImporTotalCheck >= importe_minimo) || txtReenvio.Text == "S" || txtReenvio.Text == "D")
                 {
                     sqlTBAI_Simple = "N";
                     this.sameSQLFacturas();
@@ -413,12 +413,12 @@ namespace VeriFactu
 
                 this.buildJson();
                 //MessageBox.Show("Factura creada correctamente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
             else
             {
                 //MessageBox.Show("No se puede crear factura duplicada");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
 
 
@@ -457,7 +457,7 @@ namespace VeriFactu
             if (ven_abono == null || ven_abono.Rows.Count == 0)
             {
                 MessageBox.Show("No puede facturar un Abono de una Venta no facturada (" + subs[0] + "/" + subs[1].Substring(0, 2) + ")");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
 
             date_abo = ven_abono.Rows[0].Field<DateTime>("VEN_DataFactura");
@@ -486,7 +486,7 @@ namespace VeriFactu
 
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
 
-            if (string.IsNullOrEmpty(checkIfExist) || txtReenvio.Text == "R" || txtReenvio.Text == "S" || txtReenvio.Text == "D")
+            if (string.IsNullOrEmpty(checkIfExist) || txtReenvio.Text == "R" || txtReenvio.Text == "S")
             {
 
                 ImportTotalString = Conection.SelectOnce(sql_getVenImportTotal).Replace(".", ",");
@@ -504,7 +504,7 @@ namespace VeriFactu
                 else
                 {
                     MessageBox.Show("Error: Falta el Nombre del Cliente");
-                    System.Windows.Forms.Application.Exit();
+                    Environment.Exit(0);
                 }
 
 
@@ -525,12 +525,12 @@ namespace VeriFactu
                 this.buildCreditNote();
                 this.buildJson();
                 //MessageBox.Show("Factura Abono creada correctamente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
             else
             {
                 //MessageBox.Show("No se puede crear factura Abono duplicada");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
         }
 
@@ -583,19 +583,19 @@ namespace VeriFactu
                 else
                 {
                     MessageBox.Show("Error: Falta el Nombre del Cliente");
-                    System.Windows.Forms.Application.Exit();
+                    Environment.Exit(0);
                 }
 
                 InvoiceArray.simple = true;
 
                 this.buildJson();
                 //MessageBox.Show("Ticket creado correctamente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
             else
             {
                 //MessageBox.Show("No se puede crear Ticket duplicado");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
         }
 
@@ -660,7 +660,7 @@ namespace VeriFactu
                 if (ven_abono == null || ven_abono.Rows.Count == 0)
                 {
                     MessageBox.Show("No puede facturar un Abono de un Ticket no facturado (" + subs[0] + "/" + subs[1].Substring(0, 2) + ")");
-                    System.Windows.Forms.Application.Exit();
+                    Environment.Exit(0);
                 }
 
                 date_abo = ven_abono.Rows[0].Field<DateTime>("VEN_DataTicket");
@@ -682,7 +682,7 @@ namespace VeriFactu
                 else
                 {
                     MessageBox.Show("Error: Falta el Nombre del Cliente");
-                    System.Windows.Forms.Application.Exit();
+                    Environment.Exit(0);
                 }
 
                 ImportTotalString = Conection.SelectOnce(sql_getVenImportTotal).Replace(".", ",");
@@ -694,12 +694,12 @@ namespace VeriFactu
                 this.buildCreditNote();
                 this.buildJson();
                 //MessageBox.Show("Ticket Abono creado correctamente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
             else
             {
                 //MessageBox.Show("No se puede crear Ticket Abono duplicado");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
 
         }
@@ -723,13 +723,13 @@ namespace VeriFactu
                 else
                 {
                     MessageBox.Show("Error: Falta Pais del cliente");
-                    System.Windows.Forms.Application.Exit();
+                    Environment.Exit(0);
                 }
             }
             else
             {
                 MessageBox.Show("Error: Falta tipo de documento de identidad");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }*/
 
             if (vendaTable.Rows[0].Field<string>("CLI_Dni") != null)
@@ -758,19 +758,19 @@ namespace VeriFactu
                     else
                     {
                         MessageBox.Show("Error: Falta Pais del cliente");
-                        System.Windows.Forms.Application.Exit();
+                        Environment.Exit(0);
                     }
                 }
                 else
                 {
                     MessageBox.Show("Error: Falta Tipo de documento de identidad");
-                    System.Windows.Forms.Application.Exit();
+                    Environment.Exit(0);
                 }
             }
             else
             {
                 MessageBox.Show("Error: Falta el DNI del Cliente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
 
             //=====================numero de NOMBRE (name)
@@ -785,7 +785,7 @@ namespace VeriFactu
             else
             {
                 MessageBox.Show("Error: Falta el País del Cliente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
 
             if (vendaTable.Rows[0].Field<string>("CLI_CodiPostal") != null)
@@ -795,7 +795,7 @@ namespace VeriFactu
             else
             {
                 MessageBox.Show("Error: Falta el Código Postal del Cliente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
 
             if (vendaTable.Rows[0].Field<string>("Domicili") != null)
@@ -805,7 +805,7 @@ namespace VeriFactu
             else
             {
                 MessageBox.Show("Error: Falta la Dirección del Cliente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
 
             if (recargo_equivalencia_cliente == "S")
@@ -832,7 +832,7 @@ namespace VeriFactu
             else
             {
                 MessageBox.Show("Error: Falta el Registro Mercantil de la optica del Cliente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
 
             if (datosIssureTiendaTable.Rows[0].Field<string>("TicketBai_NIF").ToString() != null)
@@ -842,7 +842,7 @@ namespace VeriFactu
             else
             {
                 MessageBox.Show("Error: Falta el TicketBai_NIF de la optica del Cliente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
 
             InvoiceArray.issuer = IssuerArray; //AGREGAMOS ISSURE A INVOICE
@@ -920,7 +920,7 @@ namespace VeriFactu
                 var lineArray = new apiTicketBai.Line();
                 extrajero = false;
 
-                if ((ImporTotalCheck > importe_minimo) && (!tipoProcesado.Equals("T") && !tipoProcesado.Equals("TA")))
+                if ((ImporTotalCheck >= importe_minimo) && (!tipoProcesado.Equals("T") && !tipoProcesado.Equals("TA")))
                 {
 
                     if (vendaTable.Rows[0].Field<string>("Pais") != null)
@@ -939,7 +939,7 @@ namespace VeriFactu
                     else
                     {
                         MessageBox.Show("Error: Falta el País del Cliente");
-                        System.Windows.Forms.Application.Exit();
+                        Environment.Exit(0);
                     }
 
                 }
@@ -1263,7 +1263,7 @@ namespace VeriFactu
 
                 }
             }
-            System.Windows.Forms.Application.Exit();
+            Environment.Exit(0);
         }
 
         public void consultDuplicate()
@@ -1742,7 +1742,7 @@ namespace VeriFactu
 
             if (VEN_CodiFactSent == ventaNumero)
             {
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
             else
             {
@@ -1891,7 +1891,7 @@ namespace VeriFactu
                     Conection.ExecuteCommand(cmd);
 
                 }
-                //System.Windows.Forms.Application.Exit();
+                //Environment.Exit(0);
 
                 //MessageBox.Show("Proceso realizado correctamente");
             }
@@ -1910,7 +1910,7 @@ namespace VeriFactu
                     msjReturn = "Error: " + new_factura.message;
                 }
             }
-            //System.Windows.Forms.Application.Exit();
+            //Environment.Exit(0);
 
 
 

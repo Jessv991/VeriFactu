@@ -75,6 +75,7 @@ namespace VeriFactu
         static string id_vendafact = System.String.Empty;
         static DataTable ven_abono = new DataTable();
         static DataTable vendaTable = new DataTable();
+        static DataTable factCancelar = new DataTable();
         static DataTable dataFactSustitucion = new DataTable();
         static DataTable datosIssureTiendaTable = new DataTable();
         static DateTime date_abo = new DateTime();
@@ -283,7 +284,7 @@ namespace VeriFactu
             else if (tipoProcesado[0] == 'D' || tipoProcesado[0] == 'S')
             {
                 this.deleteOrState();
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
             else
             {
@@ -376,9 +377,8 @@ namespace VeriFactu
 
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
 
-            if (string.IsNullOrEmpty(checkIfExist) || txtReenvio.Text == "R" || txtReenvio.Text == "S" || txtReenvio.Text == "D")
+            if (string.IsNullOrEmpty(checkIfExist) || txtReenvio.Text == "R" || txtReenvio.Text == "S")
             {
-
                 ImportTotalString = Conection.SelectOnce(sql_getVenImportTotal).Replace(".", ",");
 
 
@@ -394,10 +394,10 @@ namespace VeriFactu
                 else
                 {
                     MessageBox.Show("Error: Falta el Nombre del Cliente");
-                    System.Windows.Forms.Application.Exit();
+                    Environment.Exit(0);
                 }
 
-                if ((ImporTotalCheck > importe_minimo) || txtReenvio.Text == "S" || txtReenvio.Text == "D")
+                if ((ImporTotalCheck >= importe_minimo) || txtReenvio.Text == "S" || txtReenvio.Text == "D")
                 {
                     this.datosCliente();
                 }
@@ -409,13 +409,13 @@ namespace VeriFactu
 
                 this.buildJson();
                 //MessageBox.Show("Factura creada correctamente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
             else
             {
 
                 //MessageBox.Show("No se puede crear factura duplicada");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
 
 
@@ -454,7 +454,7 @@ namespace VeriFactu
             if (ven_abono == null || ven_abono.Rows.Count == 0)
             {
                 MessageBox.Show("No puede facturar un Abono de una Venta no facturada (" + subs[0] + "/" + subs[1].Substring(0, 2) + ")");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
 
             date_abo = ven_abono.Rows[0].Field<DateTime>("VEN_DataFactura");
@@ -482,7 +482,7 @@ namespace VeriFactu
 
             string checkIfExist = Conection.SelectOnce(sql_checkTbaiCodi);
 
-            if (string.IsNullOrEmpty(checkIfExist) || txtReenvio.Text == "R" || txtReenvio.Text == "S" || txtReenvio.Text == "D")
+            if (string.IsNullOrEmpty(checkIfExist) || txtReenvio.Text == "R" || txtReenvio.Text == "S")
             {
 
                 ImportTotalString = Conection.SelectOnce(sql_getVenImportTotal).Replace(".", ",");
@@ -500,11 +500,11 @@ namespace VeriFactu
                 else
                 {
                     MessageBox.Show("Error: Falta el Nombre del Cliente");
-                    System.Windows.Forms.Application.Exit();
+                    Environment.Exit(0);
                 }
 
                 //================DATOS DEL CLIENTE================
-                if ((ImporTotalCheck > importe_minimo) || txtReenvio.Text == "S" || txtReenvio.Text == "D")
+                if ((ImporTotalCheck >= importe_minimo) || txtReenvio.Text == "S" || txtReenvio.Text == "D")
                 {
                     InvoiceArray.type = "R1";
                     this.buildCreditNote();
@@ -519,12 +519,12 @@ namespace VeriFactu
 
                 this.buildJson();
                 //MessageBox.Show("Factura Abono creada correctamente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
             else
             {
                 //MessageBox.Show("No se puede crear factura Abono duplicada");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
         }
 
@@ -575,12 +575,12 @@ namespace VeriFactu
 
                 this.buildJson();
                 //MessageBox.Show("Ticket creado correctamente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
             else
             {
                 //MessageBox.Show("No se puede crear Ticket duplicado");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
         }
 
@@ -644,7 +644,7 @@ namespace VeriFactu
                 if (ven_abono == null || ven_abono.Rows.Count == 0)
                 {
                     MessageBox.Show("No puede facturar un Abono de un Ticket no facturado (" + subs[0] + "/" + subs[1].Substring(0, 2) + ")");
-                    System.Windows.Forms.Application.Exit();
+                    Environment.Exit(0);
                 }
 
                 date_abo = ven_abono.Rows[0].Field<DateTime>("VEN_DataTicket");
@@ -666,7 +666,7 @@ namespace VeriFactu
                 else
                 {
                     MessageBox.Show("Error: Falta el Nombre del Cliente");
-                    System.Windows.Forms.Application.Exit();
+                    Environment.Exit(0);
                 }
 
                 ImportTotalString = Conection.SelectOnce(sql_getVenImportTotal).Replace(".", ",");
@@ -677,12 +677,12 @@ namespace VeriFactu
                 this.buildCreditNote();
                 this.buildJson();
                 //MessageBox.Show("Ticket Abono creado correctamente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
             else
             {
                 //MessageBox.Show("No se puede crear Ticket Abono duplicado");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
 
         }
@@ -713,7 +713,7 @@ namespace VeriFactu
             else
             {
                 MessageBox.Show("Error: Falta el Tipo Documento del Cliente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }*/
 
             //=====================numero de DNI (irsId)
@@ -745,14 +745,14 @@ namespace VeriFactu
                 else
                 {
                     MessageBox.Show("Error: Falta el Tipo Documento del Cliente");
-                    System.Windows.Forms.Application.Exit();
+                    Environment.Exit(0);
                 }
 
             }
             else
             {
                 MessageBox.Show("Error: Falta el DNI del Cliente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
 
             //=====================numero de NOMBRE (name)
@@ -769,7 +769,7 @@ namespace VeriFactu
             else
             {
                 MessageBox.Show("Error: Falta el Pais del Cliente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
 
             //=====================INVOICE=====================
@@ -816,7 +816,7 @@ namespace VeriFactu
             else
             {
                 MessageBox.Show("Error: Falta el nombre del Registro Mercantil del Cliente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
 
             if (datosIssureTiendaTable.Rows[0].Field<string>("TicketBai_NIF").ToString() != null)
@@ -826,7 +826,7 @@ namespace VeriFactu
             else
             {
                 MessageBox.Show("Error: Falta el TicketBai_NIF de la Optica del Cliente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
 
             InvoiceArray.issuer = IssuerArray; //AGREGAMOS ISSURE A INVOICE
@@ -878,7 +878,7 @@ namespace VeriFactu
             else
             {
                 MessageBox.Show("Error: Falta el Nombre del Cliente");
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
             descriptionArray.text = descripcion + serie + "/" + tbai_codifactura + "/" + txtYear.Text + " EMITIDA A " + nombre_cliente + " DE LA VENTA " + txtTienda.Text + "/" + venCodigo;
             descriptionArray.operationDate = date.ToString("yyyy-MM-dd");
@@ -1271,7 +1271,7 @@ namespace VeriFactu
                     }
                 }
             }
-            System.Windows.Forms.Application.Exit();
+            Environment.Exit(0);
         }
 
         public void consultDuplicate()
@@ -1637,7 +1637,7 @@ namespace VeriFactu
 
             if (VEN_CodiFactSent == ventaNumero)
             {
-                System.Windows.Forms.Application.Exit();
+                Environment.Exit(0);
             }
             else
             {
@@ -1684,8 +1684,6 @@ namespace VeriFactu
 
         public string deleteOrState()
         {
-            string sql_tipoForT= "SELECT TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE TBAI_Queue = '" + txtFactura.Text + "'";
-            string tipoForT= Conection.SelectOnce(sql_tipoForT);
             string msjReturn = "";
 
             var client = new RestClient(new RestClientOptions(TicketBai_DB.Trim())
@@ -1704,13 +1702,18 @@ namespace VeriFactu
             }
             else if (tipoProcesado == "D")
             {
+                string sql_facturaCancelar = "SELECT TBAI_Codi, FACT_Tipo FROM FACTURAS_HACIENDA_AUTO WHERE TBAI_Queue = '" + txtFactura.Text + "'";
+                factCancelar = Conection.SelectRows(sql_facturaCancelar);
+                string TBAI_Codi = factCancelar.Rows[0].Field<Int32>("TBAI_Codi").ToString();
+                string FACT_Tipo = factCancelar.Rows[0].Field<string>("FACT_Tipo").ToString();
+
                 sql_updateStateDelete = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Estado = 'Cancelada' WHERE " +
-                                        "TBAI_Codi = '" + tipoForT + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND TBAI_Queue = " + txtFactura.Text;
+                                        "FACT_Tipo = '" + FACT_Tipo +  "' AND TBAI_Codi = '" + TBAI_Codi + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND TBAI_Queue = " + txtFactura.Text;
                 Conection.PerformQuery(sql_updateStateDelete);
 
-                sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_UserId=?, TBAI_Data = ?, TBAI_Id = ?, TBAI_Hash = ?, TBAI_Xml = ?, TBAI_Queue = ?, TBAI_Estado=?, TBAI_mensaje = ? WHERE " +
-                                        "TBAI_Codi = '" + tipoForT + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND TBAI_Queue IS NULL";
-                sql_updateFactura_KO = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Mensaje = ? WHERE TBAI_Codi = '" + tipoForT + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND TBAI_Queue IS NULL";
+                sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_UserId=?, TBAI_Data = ?, TBAI_Id = ?, TBAI_Hash = ?, TBAI_Xml = ?, TBAI_Queue = ?, TBAI_Estado=?, TBAI_Mensaje = ? WHERE " +
+                                        "FACT_Tipo = '" + FACT_Tipo + "' AND TBAI_Codi = '" + TBAI_Codi + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND TBAI_Queue IS NULL";
+                sql_updateFactura_KO = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Mensaje = ? WHERE FACT_Tipo = '" + FACT_Tipo + "' AND TBAI_Codi = '" + TBAI_Codi + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND TBAI_Queue IS NULL";
 
                 request = new RestRequest("verifactu/v1/invoice_cancel", Method.Post);
                 request.AddStringBody(txtFactura.Text, DataFormat.Json);
@@ -1745,7 +1748,8 @@ namespace VeriFactu
                 // insert this file in the database
                 using (System.Data.Odbc.OdbcCommand cmd = new System.Data.Odbc.OdbcCommand())
                 {
-                    //TBAI_Estado=?, 
+                    //TBAI_Estado=?,
+                    cmd.Parameters.Clear();
                     cmd.CommandText = sql_updateFactura;
                     if (tipoProcesado == "S")
                     {
@@ -1769,7 +1773,7 @@ namespace VeriFactu
                         paramTBAI_Data.Value = issuedTime;
                         cmd.Parameters.Add(paramTBAI_Data);
                         System.Data.Odbc.OdbcParameter paramTBAI_Id = new System.Data.Odbc.OdbcParameter();
-                        paramTBAI_Id.OdbcType = System.Data.Odbc.OdbcType.Date;
+                        paramTBAI_Id.OdbcType = System.Data.Odbc.OdbcType.Text;
                         paramTBAI_Id.Value = new_factura.chainInfo.number;
                         cmd.Parameters.Add(paramTBAI_Id);
                         System.Data.Odbc.OdbcParameter paramTBAI_Hash = new System.Data.Odbc.OdbcParameter();
@@ -1797,7 +1801,7 @@ namespace VeriFactu
                     Conection.ExecuteCommand(cmd);
 
                 }
-                //System.Windows.Forms.Application.Exit();
+                //Environment.Exit(0);
 
                 //MessageBox.Show("Proceso realizado correctamente");
             }
@@ -1817,7 +1821,7 @@ namespace VeriFactu
                     msjReturn = "Error: " + new_factura.message;
                 }
             }
-            System.Windows.Forms.Application.Exit();
+            Environment.Exit(0);
 
             return msjReturn;
         }
