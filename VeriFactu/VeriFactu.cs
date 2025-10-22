@@ -1711,7 +1711,7 @@ namespace VeriFactu
                                         "FACT_Tipo = '" + FACT_Tipo +  "' AND TBAI_Codi = '" + TBAI_Codi + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND TBAI_Queue = " + txtFactura.Text;
                 Conection.PerformQuery(sql_updateStateDelete);
 
-                sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_UserId=?, TBAI_Data = ?, TBAI_Id = ?, TBAI_Hash = ?, TBAI_Xml = ?, TBAI_Queue = ?, TBAI_Estado=?, TBAI_Mensaje = ? WHERE " +
+                sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_UserId=?, TBAI_Data = ?, TBAI_Id = ?, TBAI_Hash = ?, TBAI_Xml = ?, TBAI_Queue = ?, TBAI_Estado=? WHERE " +
                                         "FACT_Tipo = '" + FACT_Tipo + "' AND TBAI_Codi = '" + TBAI_Codi + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND TBAI_Queue IS NULL";
                 sql_updateFactura_KO = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Mensaje = ? WHERE FACT_Tipo = '" + FACT_Tipo + "' AND TBAI_Codi = '" + TBAI_Codi + "' AND FACT_Tienda = '" + txtTienda.Text + "' AND TBAI_Queue IS NULL";
 
@@ -1792,10 +1792,6 @@ namespace VeriFactu
                         paramTBAI_Estado.OdbcType = System.Data.Odbc.OdbcType.Text;
                         paramTBAI_Estado.Value = "Cancelada";
                         cmd.Parameters.Add(paramTBAI_Estado);
-                        System.Data.Odbc.OdbcParameter paramTBAI_Mensaje = new System.Data.Odbc.OdbcParameter();
-                        paramTBAI_Mensaje.OdbcType = System.Data.Odbc.OdbcType.Text;
-                        paramTBAI_Mensaje.Value = new_factura.message;
-                        cmd.Parameters.Add(paramTBAI_Mensaje);
                     }
 
                     Conection.ExecuteCommand(cmd);
