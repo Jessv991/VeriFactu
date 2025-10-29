@@ -21,7 +21,6 @@ namespace VeriFactu
 
             string TicketBai_Tipo = Conection.SelectOnce(sql).ToUpper();
 
-
             if (TicketBai_Tipo == "VERIFACTU") {
 
                 //MessageBox.Show("Entró a verifactu");

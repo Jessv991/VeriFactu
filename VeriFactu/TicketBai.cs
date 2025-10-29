@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
+using Microsoft.VisualBasic.ApplicationServices;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using RestSharp;
@@ -66,6 +67,7 @@ namespace VeriFactu
         static string id_vendafact = System.String.Empty;
         static DataTable ven_abono = new DataTable();
         static DataTable vendaTable = new DataTable();
+        static DataTable factCancelar = new DataTable();
         static DataTable datosIssureTiendaTable = new DataTable();
         static DateTime date_abo = new DateTime();
         static string date_abo_formated = "";
@@ -74,9 +76,11 @@ namespace VeriFactu
         static string filename = System.String.Empty;
         static string filename2 = System.String.Empty;
         static DateTime date = new DateTime();
+        static DateTime fechaFormat2 = new DateTime();
         static string tbai_codifactura = System.String.Empty;
         static string date_formated = System.String.Empty;
         static string nombre_cliente = System.String.Empty;
+        static string TBAI_FacturaSustituida = System.String.Empty;
         static bool consultAgainTBAI_Codi = false;
 
         //=============ARRAYS DE LA API PARA ARMAR INVOICE
@@ -144,6 +148,18 @@ namespace VeriFactu
             {
                 sql_getListaParametros = "SELECT PAR_Valor FROM TIENDADATOS WHERE TIE_Codigo = " + txtTienda.Text + " AND PAR_Key = 'TicketBai_ApiKey'";
                 TicketBai_ApiKey = Conection.SelectOnce(sql_getListaParametros); //consulta para optiner 'TicketBai_ApiKey'
+            }
+
+            if (string.IsNullOrEmpty(TicketBai_DB))
+            {
+                MessageBox.Show("Falta URL de la plataforma de Odoo", "Error de URL", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Environment.Exit(0);
+            }
+
+            if (string.IsNullOrEmpty(TicketBai_ApiKey))
+            {
+                MessageBox.Show("Falta ApiKey de la Bade de Datos", "Error de ApiKey", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Environment.Exit(0);
             }
 
             sql_recargoEquivalencia = "SELECT PAR_Valor FROM TIENDADATOS WHERE TIE_Codigo = " + txtTienda.Text + " AND PAR_key = 'RecargodeEquivalencia'";
@@ -300,12 +316,21 @@ namespace VeriFactu
 
             sql_getTbaiCodiReenvio = "SELECT TBAI_Codi as TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo='" + txtTipo.Text + "' AND VEN_NumFactura = '" + txtFactura.Text + "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "' AND FACT_Tienda = '" + txtTienda.Text + "'";
 
-            sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Codi = ?, TBAI_Id = ?, TBAI_Queue = ?, TBAI_Xml = ?, TBAI_Data = ?, TBAI_Hash = ?, TBAI_Estado = ?, TBAI_mensaje = ?, TBAI_Qr = ?, TBAI_Url = ?, TBAI_ImgQr = ? WHERE " +
+
+            string TBAI_FacturaSustitucion = "";
+            string paramTBAI_FacturaSustitucion = "";
+            if (txtReenvio.Text == "S")
+            {
+                TBAI_FacturaSustitucion = " AND TBAI_Simple = 'N'";
+                paramTBAI_FacturaSustitucion = ", TBAI_FacturaSustituida = ?";
+            }
+
+            sql_updateFactura = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Codi = ?, TBAI_Id = ?, TBAI_Queue = ?, TBAI_Xml = ?, TBAI_Data = ?, TBAI_Hash = ?, TBAI_Estado = ?, TBAI_mensaje = ?, TBAI_Qr = ?, TBAI_Url = ?, TBAI_ImgQr = ?" + paramTBAI_FacturaSustitucion + " WHERE " +
                                         "VEN_NumFactura = '" + txtFactura.Text + "' " +
                                         "AND FACT_Tienda = '" + txtTienda.Text + "' " +
                                         "AND FACT_Tipo = '" + txtTipo.Text +
                                         "' AND TBAI_Simple = '" + sqlTBAI_Simple +
-                                        "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'";
+                                        "' AND YEAR(VEN_DataFactura) = '" + txtYear.Text + "'" + TBAI_FacturaSustitucion;
 
             sql_updateFactura_KO = "UPDATE FACTURAS_HACIENDA_AUTO SET TBAI_Mensaje = ? WHERE " +
                                         "VEN_NumFactura = '" + txtFactura.Text + "' " +
@@ -390,7 +415,7 @@ namespace VeriFactu
 
                 if (vendaTable.Rows[0].Field<string>("Nom").ToString() != null)
                 {
-                    nombre_cliente = vendaTable.Rows[0].Field<string>("Nom").ToString();
+                    nombre_cliente = vendaTable.Rows[0].Field<string>("Nom").ToString().Trim();
                 }
                 else
                 {
@@ -636,7 +661,7 @@ namespace VeriFactu
             sql_getVenFactAbono = "SELECT VEN_ImportBrut FROM VENDA WHERE VEN_Ticket = '" + txtFactura.Text + "' " +
                                        "AND VEN_Tienda = '" + txtTienda.Text + "' " +
                                        "AND YEAR(VEN_DataTicket) = '" + txtYear.Text + "' " +
-                                       "AND V.VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
+                                       "AND VEN_NumserieFacturacion " + condicionVEN_NumserieFacturacion +
                                        " AND VEN_Referencia = 'ABONO'";
 
 
@@ -752,7 +777,7 @@ namespace VeriFactu
                         else
                         {
                             recipientArray.id = dni;
-                            recipientArray.idType = vendaTable.Rows[0].Field<string>("TipoDoc").ToString(); //IrsIdType
+                            recipientArray.idType = vendaTable.Rows[0].Field<string>("TipoDoc").ToString().Trim(); //IrsIdType
                         }
                     }
                     else
@@ -780,7 +805,7 @@ namespace VeriFactu
 
             if (vendaTable.Rows[0].Field<string>("Pais") != null)
             {
-                recipientArray.country = vendaTable.Rows[0].Field<string>("Pais").ToString();
+                recipientArray.country = vendaTable.Rows[0].Field<string>("Pais").ToString().Trim();
             }
             else
             {
@@ -790,7 +815,7 @@ namespace VeriFactu
 
             if (vendaTable.Rows[0].Field<string>("CLI_CodiPostal") != null)
             {
-                recipientArray.postal = vendaTable.Rows[0].Field<string>("CLI_CodiPostal").ToString();
+                recipientArray.postal = vendaTable.Rows[0].Field<string>("CLI_CodiPostal").ToString().Trim();
             }
             else
             {
@@ -800,7 +825,7 @@ namespace VeriFactu
 
             if (vendaTable.Rows[0].Field<string>("Domicili") != null)
             {
-                recipientArray.address = vendaTable.Rows[0].Field<string>("Domicili").ToString();
+                recipientArray.address = vendaTable.Rows[0].Field<string>("Domicili").ToString().Trim();
             }
             else
             {
@@ -827,7 +852,7 @@ namespace VeriFactu
 
             if (datosIssureTiendaTable.Rows[0].Field<string>("RegMercantil").ToString() != null)
             {
-                IssuerArray.name = datosIssureTiendaTable.Rows[0].Field<string>("RegMercantil").ToString();
+                IssuerArray.name = datosIssureTiendaTable.Rows[0].Field<string>("RegMercantil").ToString().Trim();
             }
             else
             {
@@ -837,7 +862,7 @@ namespace VeriFactu
 
             if (datosIssureTiendaTable.Rows[0].Field<string>("TicketBai_NIF").ToString() != null)
             {
-                IssuerArray.irsId = datosIssureTiendaTable.Rows[0].Field<string>("TicketBai_NIF").ToString();
+                IssuerArray.irsId = datosIssureTiendaTable.Rows[0].Field<string>("TicketBai_NIF").ToString().Trim();
             }
             else
             {
@@ -886,9 +911,11 @@ namespace VeriFactu
             if (txtReenvio.Text == "S")
             {
                 InvoiceArray.replacedTicketIds = new List<apiTicketBai.Invoice_id_Substitution>();
-                string sql_VEN_DataFactura = "SELECT VEN_DataFactura FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo = '" + txtTipo.Text + "' AND FACT_Tienda = " + txtTienda.Text + " AND VEN_NumFactura = " + txtFactura.Text + " AND TBAI_Simple = 'S' AND YEAR(VEN_DataFactura) = " + txtYear.Text;
-                string VEN_DataFactura = Conection.SelectOnce(sql_VEN_DataFactura);
-                DateTime fechaFormat2 = DateTime.ParseExact(VEN_DataFactura, "yyyy/MM/dd", CultureInfo.InvariantCulture);
+                string sql_VEN_DataFactura = "SELECT VEN_DataFactura, TBAI_Codi FROM FACTURAS_HACIENDA_AUTO WHERE FACT_Tipo = '" + txtTipo.Text + "' AND FACT_Tienda = " + txtTienda.Text + " AND VEN_NumFactura = " + txtFactura.Text + " AND TBAI_Simple = 'S' AND YEAR(VEN_DataFactura) = " + txtYear.Text;
+                factCancelar = Conection.SelectRows(sql_VEN_DataFactura);
+                string VEN_DataFactura = factCancelar.Rows[0].Field<DateTime>("VEN_DataFactura").ToString();
+                string TBAI_Codi = factCancelar.Rows[0].Field<Int32>("TBAI_Codi").ToString();
+                fechaFormat2 = factCancelar.Rows[0].Field<DateTime>("VEN_DataFactura");
                 string date_formated2 = fechaFormat2.ToString("yyyy-MM-dd");
 
                 Invoice_id_SubstitutionArray.number = tbai_codifactura;
@@ -897,6 +924,8 @@ namespace VeriFactu
 
                 InvoiceArray.replacesTicket = true;
                 InvoiceArray.replacedTicketIds.Add(Invoice_id_SubstitutionArray);
+
+                TBAI_FacturaSustituida = serie + "/" + txtTienda.Text + "/" + txtYear.Text + "#" + TBAI_Codi;
             }
 
             //=====================DESCRIPCION=====================
@@ -1129,11 +1158,23 @@ namespace VeriFactu
                 apijsonInvoice.invoice = InvoiceArray;
             }
             //=====================URL JSON===================
+            RestClient client = null;
 
-            var client = new RestClient(new RestClientOptions(TicketBai_DB.Trim())
+            try
             {
-                MaxTimeout = -1 // -1 significa sin timeout
-            });
+                client = new RestClient(new RestClientOptions(TicketBai_DB.Trim())
+                {
+                    MaxTimeout = -1 // -1 significa sin timeout
+                });
+            }
+            catch (UriFormatException)
+            {
+                MessageBox.Show("La URL del cliente no tiene un formato válido. Verifica la configuración.",
+                                "Error de URL",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+                Environment.Exit(0);
+            }
 
             var request = new RestRequest("ticketbai_api/v1/invoice", Method.Post);
 
@@ -1226,6 +1267,13 @@ namespace VeriFactu
                         paramTBAI_ImgQr.OdbcType = System.Data.Odbc.OdbcType.Image;
                         paramTBAI_ImgQr.Value = fileData;
                         cmd.Parameters.Add(paramTBAI_ImgQr);
+                        if (txtReenvio.Text == "S")
+                        {
+                            System.Data.Odbc.OdbcParameter paramTBAI_FacturaSustituida = new System.Data.Odbc.OdbcParameter();
+                            paramTBAI_FacturaSustituida.OdbcType = System.Data.Odbc.OdbcType.Text;
+                            paramTBAI_FacturaSustituida.Value = TBAI_FacturaSustituida;
+                            cmd.Parameters.Add(paramTBAI_FacturaSustituida);
+                        }
 
                         Conection.ExecuteCommand(cmd);
                     }
@@ -1248,6 +1296,30 @@ namespace VeriFactu
                         this.consultDuplicate();
 
 
+                    }
+                    else if (new_factura.message == "Incorrect VAT number, irsId has to be a Spanish VAT number.")
+                    {
+                        MessageBox.Show("El número de DNI del cliente es incorrecto.", "Error de DNI", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    else if (new_factura.message == "recipientIrs[\"idType\"] type mismatch, expected: undefined, found: ")
+                    {
+                        MessageBox.Show("Se debe colocar el tipo de documento de identidad del cliente.", "Error de Tipo de documento de identidad", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    else if (new_factura.message == "recipientIrs[\"country\"] type mismatch, expected: import(\"./src/common_doc_types\").CountryCode, found: ")
+                    {
+                        MessageBox.Show("Se debe colocar el país del cliente.", "Error de Pais", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    else if (new_factura.message == "Invoice without address for recipients.")
+                    {
+                        MessageBox.Show("Se debe colocar la dirección del cliente.", "Error de direccion", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    else if (new_factura.message == "Issuer ID and fiscal name are required.")
+                    {
+                        MessageBox.Show("Hace falta el Nombre fiscal de la óptica.", "Error de nombre de la empresa", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    else if (new_factura.message == "The company does not exist for user or is not unique")
+                    {
+                        MessageBox.Show("Hace falta el número de NIF de la óptica", "Error de NIF", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                     else
                     {
@@ -1377,11 +1449,22 @@ namespace VeriFactu
 
             string TBAI_Queue = Conection.SelectOnce(sql_maxTbaiQueue);
             //string TBAI_Queue = "400";
-
-            var client2 = new RestClient(new RestClientOptions(TicketBai_DB.Trim())
+            RestClient client2 = null;
+            try
             {
-                MaxTimeout = -1
-            });
+                client2 = new RestClient(new RestClientOptions(TicketBai_DB.Trim())
+                {
+                    MaxTimeout = -1
+                });
+            }
+            catch (UriFormatException)
+            {
+                MessageBox.Show("La URL del cliente no tiene un formato válido. Verifica la configuración.",
+                                "Error de URL",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+                Environment.Exit(0);
+            }
 
             var request2 = new RestRequest("ticketbai_api/v1/invoice_data/" + TBAI_Queue, Method.Get);
 
@@ -1793,10 +1876,23 @@ namespace VeriFactu
             string tipoForT = Conection.SelectOnce(sql_tipoForT);
             string msjReturn = "";
 
-            var client = new RestClient(new RestClientOptions(TicketBai_DB.Trim())
+            RestClient client = null;
+
+            try
             {
-                MaxTimeout = -1 // -1 significa sin timeout
-            });
+                client = new RestClient(new RestClientOptions(TicketBai_DB.Trim())
+                {
+                    MaxTimeout = -1 // -1 significa sin timeout
+                });
+            }
+            catch (UriFormatException)
+            {
+                MessageBox.Show("La URL del cliente no tiene un formato válido. Verifica la configuración.",
+                                "Error de URL",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+                Environment.Exit(0);
+            }
 
             RestRequest request = null;
 
