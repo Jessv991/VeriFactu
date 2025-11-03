@@ -1449,8 +1449,6 @@ namespace VeriFactu
 
             string TBAI_Queue = Conection.SelectOnce(sql_maxTbaiQueue);
 
-
-            string TBAI_Queue = "1708";
             //string TBAI_Queue = "400";
             RestClient client2 = null;
             try
